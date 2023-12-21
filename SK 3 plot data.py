@@ -429,7 +429,6 @@ ax2.text(-2, -30,
 
 # Add diffusion vector
 theta_diff = (np.log((12+16+16)/(12+17+16)))/(np.log((12+16+16)/(12+18+16)))
-print(f'The theta for diffusion is {theta_diff:.3f}')
 shift_d18O = -1
 A = (0, 0)
 B = (shift_d18O, apply_theta(0, 0, shift_d18O=shift_d18O, theta=theta_diff))

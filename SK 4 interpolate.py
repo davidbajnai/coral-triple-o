@@ -320,6 +320,7 @@ ax.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 plt.savefig(sys.path[0] + "/SK Figure S5.png")
 plt.close()
 
+
 # Create Figure 3
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
