@@ -1,10 +1,22 @@
+# >>>>>>>>>
+
+# Import libraries
 import sys
-import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 
+# Plot parameters
+plt.rcParams["legend.loc"] = "best"
+plt.rcParams.update({'font.size': 7})
+plt.rcParams['scatter.edgecolors'] = "k"
+plt.rcParams['scatter.marker'] = "o"
+plt.rcParams["lines.linewidth"] = 0.5
+plt.rcParams["patch.linewidth"] = 0.5
+plt.rcParams["figure.figsize"] = (9, 4)
+plt.rcParams["savefig.dpi"] = 600
+plt.rcParams["savefig.bbox"] = "tight"
 
 # Functions that make life easier
 def prime(x):
@@ -67,7 +79,7 @@ def get_18O_temp(d18O_coral, d18O_coral_err, d18O_seawater, d18O_seawater_err):
     a18_max = (d18O_coral - d18O_coral_err + 1000) / (d18O_seawater + d18O_seawater_err + 1000)
     T_max = 1000 / ((a18_max - 0.9642) / 0.0201) - 273.15
 
-    return round(T, 1), round((T_max-T_min)/2, 1)
+    return T, (T_max-T_min)/2
 
 def d17O_cc(equilibrium_temperatures, d17Ow):
     return a17_cc(equilibrium_temperatures + 273.15) * (d17Ow+1000) - 1000
@@ -84,10 +96,7 @@ def d17O(d18O, Dp17O):
 def calculate_theta(d18O_A, Dp17O_A, d18O_B, Dp17O_B):
     a18 = (d18O_B + 1000) / (d18O_A + 1000)
     a17 = (d17O(d18O_B, Dp17O_B) + 1000) / (d17O(d18O_A, Dp17O_A) + 1000)
-
-    theta = round(np.log(a17) / np.log(a18), 4)
-
-    return theta
+    return np.log(a17) / np.log(a18)
 
 
 def apply_theta(d18O_A, Dp17O_A, d18O_B=None, shift_d18O=None, theta=None):
@@ -190,14 +199,14 @@ def vital_vector(d18O_coral, Dp17O_coral, num_points, shift_d18O, theta_ve):
     return pd.DataFrame({'d18O': x_values, 'Dp17O': y_values})
 
 
-def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d18O_seawater, d18O_seawater_err, Dp17O_seawater, Dp17O_seawater_err, theta_ve):
+def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d18O_seawater, d18O_seawater_err, Dp17O_seawater, Dp17O_seawater_err, theta_ve, ax):
 
     shift_d18O = 15
 
     # Get equilibrium values for seawater
     df_eq = plot_equilibrium(Dp17Ow=Dp17O_seawater, d18Ow=d18O_seawater,
-                             ax=ax1, color="k")
-    plt.errorbar(prime(d18O_seawater), Dp17O_seawater,
+                             ax=ax, color="k")
+    ax.errorbar(prime(d18O_seawater), Dp17O_seawater,
                     xerr=d18O_seawater_err, yerr=Dp17O_seawater_err,
                     fmt="none", color="k", zorder=-1)
     
@@ -213,48 +222,39 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     temp = df_eq.iloc[min_indices[0]]["temperature"]
 
     # Plot
-    ax1.plot(prime(df_line["d18O"]), df_line["Dp17O"],"k", ls="-")
-    ax1.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="k")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"k", ls="-")
+    ax.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="k")
 
     # Maximum temperature
     df_eq = plot_equilibrium(Dp17Ow=Dp17O_seawater - Dp17O_seawater_err, d18Ow=d18O_seawater + d18O_seawater_err,
-                             ax=ax1, color="red")
+                             ax=ax, color="red")
     df_line = vital_vector(d18O_coral - d18O_coral_error, Dp17O_coral + Dp17O_coral_error, len(df_eq["d18O"]), shift_d18O, theta_ve)
     df_eq_f = df_eq.loc[:, ["d18O", "Dp17O"]]
     distances = cdist(df_eq_f, df_line)
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
     closest_point_eq = df_eq_f.iloc[min_indices[0]]
     T_max = df_eq.iloc[min_indices[0]]["temperature"]
-    ax1.plot(prime(df_line["d18O"]), df_line["Dp17O"],"red", ls=":")
-    ax1.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="red")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"red", ls=":")
+    ax.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="red")
 
 
     # Minimum temperature
     df_eq = plot_equilibrium(Dp17Ow=Dp17O_seawater + Dp17O_seawater_err, d18Ow=d18O_seawater - d18O_seawater_err,
-                             ax=ax1, color="blue")
+                             ax=ax, color="blue")
     df_line = vital_vector(d18O_coral + d18O_coral_error, Dp17O_coral - Dp17O_coral_error, len(df_eq["d18O"]), shift_d18O, theta_ve)
     df_eq_f = df_eq.loc[:, ["d18O", "Dp17O"]]
     distances = cdist(df_eq_f, df_line)
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
     closest_point_eq = df_eq_f.iloc[min_indices[0]]
     T_min = df_eq.iloc[min_indices[0]]["temperature"]
-    ax1.plot(prime(df_line["d18O"]), df_line["Dp17O"],"blue", ls=":")
-    ax1.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="blue")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"blue", ls=":")
+    ax.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="blue")
 
-    return round(temp, 1), round((T_max-T_min)/2, 1)
+    return temp, (T_max-T_min)/2
 
 
 # Read data from CSV files
 df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-3.csv", sep=",")
-
-# Figure paramters valid for all figures in this script
-plt.rcParams.update({'font.size': 6})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5  # error bar width
-plt.rcParams["patch.linewidth"] = 0.5  # marker edge width
-plt.rcParams["figure.figsize"] = (4, 4)
-plt.rcParams['savefig.dpi'] = 600
 
 
 # Assign colors and markers
@@ -273,10 +273,10 @@ colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 # print("The mean seawater cDp17O error is: " + str(round(df["Dp17Osw_err"].mean(),2)) + " ppm; " + f"∆error = {round(df['Dp17Osw_err'].mean() - 6, 2)}")
 
 # Figure S5 - to check if the interpolation works
-ax1 = plt.subplot(1, 1, 1)
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Get the "vital effect"-corrected temperatures
-theta_ve = round(df["theta_ve"].median(), 3)
+theta_ve = df["theta_ve"].median()
 df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       Dp17O_coral=row["Dp17O_AC"],
                                                       d18O_coral_error=row["d18O_error"],
@@ -285,7 +285,8 @@ df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       d18O_seawater_err=row["d18Osw_modeled_err"],
                                                       Dp17O_seawater=row["Dp17Osw"],
                                                       Dp17O_seawater_err=row["Dp17Osw_err"],
-                                                      theta_ve=theta_ve),
+                                                      theta_ve=theta_ve,
+                                                      ax=ax),
                                                     #   theta_ve=row["theta_ve"]),
                              axis=1)
 
@@ -293,41 +294,36 @@ df['T_17O'], df['T_17O_error'] = zip(*df['T_17O_tuple'])
 del df['T_17O_tuple']
 df["T_18O"], df["T_18O_error"] = get_18O_temp(df["d18O_AC"], df["d18O_error"],
                                               df["d18Osw_modeled"], df["d18Osw_modeled_err"])
-print("The mean error of the 17O-based temperatures is: " +
-      str(round(df["T_17O_error"].mean(),2)) + " °C")
-print("The mean error of the 18O-based temperatures is: " +
-      str(round(df["T_18O_error"].mean(),2)) + " °C")
-print("\n")
+print(f'The mean error of the 17O-based temperatures is: {df["T_17O_error"].mean():.1f} °C')
+print(f'The mean error of the 18O-based temperatures is: {df["T_18O_error"].mean():.1f} °C')
 
 # Print  the temperature differnce
-print("The average difference between T∆17O and the modeled temperatures is: " +
-        str(round(df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_modeled"].mean(),1)) + " °C (COLD-WATER CORALS)")
-print("The average difference between T∆17O and the modeled temperatures is: " +
-        str(round(df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_modeled"].mean(),1)) + " °C (WARM-WATER CORALS)")
-print("\n")
-print("The average difference between T∆17O and the measured temperatures is: " +
-        str(round(df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_measured"].mean(),1)) + " °C (COLD-WATER CORALS)")
-print("The average difference between T∆17O and the measured temperatures is: " +
-        str(round(df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_measured"].mean(),1)) + " °C (WARM-WATER CORALS)")
+print("\nThe average difference between the 17O-based and the MODELED temperatures:")
+print(f'{df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_modeled"].mean():.1f} °C (COLD-WATER CORALS)')
+print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.1f} °C (WARM-WATER CORALS)')
+
+print("\nThe average difference between the 17O-based and the MEASURED temperatures: ")
+print(f'{df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_measured"].mean():.1f} °C (COLD-WATER CORALS)')
+print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_measured"].mean():.1f} °C (WARM-WATER CORALS)')
 
 # Create a separate scatter plot for each species
-ax1.scatter(prime(df["d18O_AC"]), df["Dp17O_AC"],
-            marker="o", fc="k")
-ax1.errorbar(prime(df["d18O_AC"]), df["Dp17O_AC"],
-             xerr=df["d18O_error"],
-             yerr=df["Dp17O_error"],
-             fmt="none", color="k", zorder=-1)
+ax.scatter(prime(df["d18O_AC"]), df["Dp17O_AC"],
+           marker="o", fc="k")
+ax.errorbar(prime(df["d18O_AC"]), df["Dp17O_AC"],
+            xerr=df["d18O_error"],
+            yerr=df["Dp17O_error"],
+            fmt="none", color="k", zorder=-1)
 
-plt.ylabel("$\Delta^{\prime 17}$O (ppm, VSMOW)")
-plt.xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
+ax.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
+ax.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
-plt.savefig(sys.path[0] + "/SK Figure S5.png", bbox_inches='tight')
+plt.savefig(sys.path[0] + "/SK Figure S5.png")
 plt.close()
 
-# Figure 3 - Subplot A
-plt.rcParams["figure.figsize"] = (9, 4)
-ax1 = plt.subplot(1, 2, 1)
+# Create Figure 3
+fig, (ax1, ax2) = plt.subplots(1, 2)
 
+# Subplot A
 
 for cat in cat1:
     for dog in cat2:
@@ -339,13 +335,11 @@ for cat in cat1:
             yerr = data["T_18O_error"]
             ax1.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=f"{cat}")
-            for xi, yi, xerri, yerri in zip(x, y, xerr, yerr):
-                if not (np.isnan(xerri) or np.isnan(yerri)):
-                    plt.errorbar(x, y, xerr=xerr, yerr=yerr,
-                                 fmt="none", color=colors[dog], zorder=0)
+            ax1.errorbar(x, y, xerr=xerr, yerr=yerr,
+                            fmt="none", color=colors[dog], zorder=0)
 
-plt.xlim(-1, 31)
-plt.ylim(-6, 66)
+ax1.set_xlim(-1, 31)
+ax1.set_ylim(-6, 66)
 
 # 1:1 line
 ax1.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
@@ -354,14 +348,14 @@ ymin, ymax = ax1.get_ylim()
 angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax1.text(20, 18, "1:1", ha="center", va="center", rotation=angle)
 
-plt.ylabel(r"Temperature from $\delta^{18}O$-thermometry (°C)")
-plt.xlabel(r"Measured growth temperature (°C)")
+ax1.set_ylabel(r"Temperature from $\delta^{18}O$-thermometry (°C)")
+ax1.set_xlabel(r"Measured growth temperature (°C)")
 
-plt.text(0.08, 0.98, "a", size=14, ha="right", va="top",
+ax1.text(0.08, 0.98, "a", size=14, ha="right", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
-# Figure 3
-ax2 = plt.subplot(1, 2, 2, sharey=ax1, sharex=ax1)
+
+# Subplot B
 
 for cat in cat1:
     for dog in cat2:
@@ -373,34 +367,27 @@ for cat in cat1:
             yerr = data["T_17O_error"]
             ax2.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=f"{cat}")
-            for xi, yi, xerri, yerri in zip(x, y, xerr, yerr):
-                if not (np.isnan(xerri) or np.isnan(yerri)):
-                    plt.errorbar(x, y, xerr=xerr, yerr=yerr,
-                                 fmt="none", color=colors[dog], zorder=0)
+            ax2.errorbar(x, y, xerr=xerr, yerr=yerr,
+                         fmt="none", color=colors[dog], zorder=0)
 
 # 1:1 line
 ax2.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
 ax2.text(20, 18, "1:1", ha="center", va="center", rotation=angle)
 
 # Add legend and format species names to italic
-legend = plt.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
+legend = ax2.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
 for text in legend.texts:
     text.set_fontsize(5.5)
     text.set_fontstyle('italic')
 
-plt.ylabel(r"Temperature corrected for 'vital effects' ($\it{T}_{\Delta\prime^{17}O}$, °C)")
-plt.xlabel(r"Measured growth temperature (°C)")
+ax2.set_ylabel(r"Temperature corrected for 'vital effects' ($\it{T}_{\Delta\prime^{17}O}$, °C)")
+ax2.set_xlabel("Measured growth temperature (°C)")
 
-plt.text(0.08, 0.98, "b", size=14, ha="right", va="top",
+ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
          transform=ax2.transAxes, fontweight="bold")
 
-plt.savefig(sys.path[0] + "/SK Figure 3.png", dpi=600, bbox_inches='tight')
-plt.close()
+plt.savefig(sys.path[0] + "/SK Figure 3.png")
+plt.close("all")
 
-df = df.round(4)
-
-# for file in os.listdir(sys.path[0]):
-#    if file.startswith("SK Table S-3"):
-#       os.remove(os.path.join(sys.path[0], file)) 
 df.to_csv(sys.path[0] + "/SK Table S-3.csv", index=False)
 df.to_excel(sys.path[0] + "/SK Table S-3.xlsx", index=False)

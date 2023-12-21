@@ -1,7 +1,13 @@
-# This code is based on isoForam by Daëron & Gray (2023)
+# This code is partly based on isoForam by Daëron & Gray (2023)
 # The code reads in the coral collection sites (location and depth) from "SK sample info.csv"
 # and then assigns a seawater T and d18O value to each site based on the gridded model of Breitkreuz et al. (2018)
 
+# INPUT: SK Table S-1.csv, SK Table S-3 part-1.csv, D18O_Breitkreuz_et_al_2018.nc
+# OUTPUT: SK Figure S3.png, SK Table S-3 part-2.csv
+
+# >>>>>>>>>
+
+# Import libraries
 from scipy.interpolate import interp1d
 import pandas as pd
 from csv import DictReader
@@ -9,9 +15,22 @@ import netCDF4 as nc
 from pylab import *
 import sys
 
+# Plot parameters
+plt.rcParams["legend.loc"] = "best"
+plt.rcParams.update({'font.size': 7})
+plt.rcParams['scatter.edgecolors'] = "k"
+plt.rcParams['scatter.marker'] = "o"
+plt.rcParams["lines.linewidth"] = 0.5
+plt.rcParams["patch.linewidth"] = 0.5
+plt.rcParams["figure.figsize"] = (9, 4)
+plt.rcParams["savefig.dpi"] = 600
+plt.rcParams["savefig.bbox"] = "tight"
+
 d18Osw_model_sigma = 0.1
 Tsw_model_sigma = 1.0
 
+# This file is not included in the repository due to its size
+# It can be downloaded from https://doi.pangaea.de/10.1594/PANGAEA.889922
 ds = nc.Dataset(sys.path[0]+"/D18O_Breitkreuz_et_al_2018.nc")
 
 lats = ds['lat_1deg_center'][:,0]
@@ -45,14 +64,9 @@ for r in Samples:
 		if k not in ["SampleName", "Type", "Species", "T_measured", "d13CDIC", "d18Osw_measured"]:
 			r[k] = float(r[k])
 
-
-
 print('Extracting seawater d18O for corals...')
 
 df_model = pd.DataFrame(columns=['SampleName', 'T_modeled', 'T_modeled_err', 'd18Osw_modeled', 'd18Osw_modeled_err'])
-
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 8})
 
 for s in Samples:
 	Sample, lon, lat, depth = s['SampleName'], s['Long'], s['Lat'], s['Depth']
@@ -126,11 +140,11 @@ for s in Samples:
 	df_model = df_model._append(new_data, ignore_index=True)
 
 	# Save figures
-	# savefig(sys.path[0] + "/isoForam models/" + f'{Sample} model.png', dpi=150, bbox_inches='tight')
+	# savefig(sys.path[0] + "/isoForam models/" + f'{Sample} model.png', dpi=150)
 
 	close(fig)
 
-df_model = round(df_model, 2)
+
 df_measurements = pd.read_csv(sys.path[0] + "/SK Table S-3 part-1.csv")
 df_Info = pd.read_csv(sys.path[0] + "/SK Table S-1.csv")[
     ["SampleName", "Species", "Type", "T_measured", "d18Osw_measured"]]
@@ -142,15 +156,7 @@ df = df_measurements.merge(
 df.to_csv(sys.path[0] + "/SK Table S-3 part-2.csv", index=False)
 
 
-# Make plot of modeled vs measured d18Osw and temperature
-
-# Figure paramters valid for all figures in this script
-plt.rcParams.update({'font.size': 6})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5  # error bar width
-plt.rcParams["patch.linewidth"] = 0.5  # marker edge width
-plt.rcParams["figure.figsize"] = (9, 4)
+# Create Figure S3
 
 # Assign colors and markers
 categories = df["SampleName"].unique()
@@ -161,7 +167,7 @@ colors = dict(zip(categories, plt.cm.tab20(
 
 
 # Subplot A: Difference between measured and modelled d18Osw
-ax1 = plt.subplot(1, 2, 1)
+fig, (ax1, ax2) = plt.subplots(1, 2)
 
 for cat in categories:
     data = df[df["SampleName"] == cat]
@@ -169,10 +175,10 @@ for cat in categories:
                 marker=markers[cat], fc=colors[cat], label=cat)
 
 # Calculate and annotate difference between measured and modeled d18Osw
-D18Osw = round(df['d18Osw_measured']-df['d18Osw_modeled'],1)
+D18Osw = df['d18Osw_measured']-df['d18Osw_modeled']
 for i, difference in enumerate(D18Osw):
-    ax1.annotate(difference, (df['d18Osw_measured'][i]-0.05, df['d18Osw_modeled'][i]),
-	ha='right', va='center')
+    ax1.annotate(f"{difference:.1f}", (df['d18Osw_measured'][i]-0.05, df['d18Osw_modeled'][i]),
+                 ha='right', va='center')
 
 # 1:1 line
 ax1.plot([0, 1.75], [0, 1.75], c = "k", ls="dashed", zorder = -1)
@@ -181,27 +187,24 @@ ymin, ymax = ax1.get_ylim()
 angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax1.text(1.5, 1.45, "1:1", ha="center", va="center", rotation=angle)
 
-plt.text(0.02, 0.98, "a", size=14, ha="left", va="top",
+ax1.text(0.02, 0.98, "a", size=14, ha="left", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
-plt.xlabel('Measured $\delta^{18}$O$_{sw}$ (‰ VSMOW)')
-plt.ylabel('Modelled $\delta^{18}$O$_{sw}$ (‰ VSMOW)')
+ax1.set_xlabel('Measured $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
+ax1.set_ylabel('Modelled $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
 
 
 # Subplot B: Difference between measured and modeled temperature
-ax2 = plt.subplot(1, 2, 2)
 
 for cat in categories:
     data = df[df["SampleName"] == cat]
-    x = data['T_measured']
-    y = data['T_modeled']
-    ax2.scatter(x, y, marker=markers[cat],
-                color=colors[cat], label=cat, ec="k")
+    ax2.scatter(data['T_measured'], data['T_modeled'],
+                marker=markers[cat], fc=colors[cat], label=cat)
 
 # Calculate and annotate difference between measured and modeled temperature
-DT = round(df['T_measured']-df['T_modeled'], 1)
+DT = df['T_measured']-df['T_modeled']
 for i, difference in enumerate(DT):
-    ax2.annotate(difference, (df['T_measured'][i]-1, df['T_modeled'][i]),
+    ax2.annotate(f"{difference:.1f}", (df['T_measured'][i]-1, df['T_modeled'][i]),
                  ha='right', va='center')
 
 # 1:1 line
@@ -214,10 +217,10 @@ ax2.text(20, 19, "1:1", ha="center", va="center", rotation=angle)
 plt.text(0.02, 0.98, "b", size=14, ha="left", va="top",
          transform=ax2.transAxes, fontweight="bold")
 
-plt.xlabel('Measured temperature (°C)')
-plt.ylabel('Modelled temperature (°C)')
+ax2.set_xlabel('Measured temperature (°C)')
+ax2.set_ylabel('Modelled temperature (°C)')
 
-plt.legend(loc='upper right', bbox_to_anchor=(1.3, 1))
+ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
 
-plt.savefig(sys.path[0] + "/SK Figure S3.png", dpi=600, bbox_inches='tight')
+plt.savefig(sys.path[0] + "/SK Figure S3.png")
 plt.close("all")

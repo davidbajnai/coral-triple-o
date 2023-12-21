@@ -1,8 +1,28 @@
+# This code is used to plot the coral data in triple oxygen isotope space,
+# and calculate the vital effect theta
+
+# INPUT: SK Table S-3 part-2.csv, seawater.csv, isoDIC_cwc.csv, isoDIC_wwc.csv
+# OUTPUT: SK Figure 2.png, SK Figure S4.png, SK Table S-3 part-3.csv
+
+# >>>>>>>>>
+
+# Import libraries
 import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
+
+# Plot parameters
+plt.rcParams["legend.loc"] = "best"
+plt.rcParams.update({'font.size': 7})
+plt.rcParams['scatter.edgecolors'] = "k"
+plt.rcParams['scatter.marker'] = "o"
+plt.rcParams["lines.linewidth"] = 0.5
+plt.rcParams["patch.linewidth"] = 0.5
+plt.rcParams["figure.figsize"] = (9, 4)
+plt.rcParams["savefig.dpi"] = 600
+plt.rcParams["savefig.bbox"] = "tight"
 
 # Functions that make life easier
 def prime(x):
@@ -198,16 +218,6 @@ df = pd.merge(df, df_equi, on="SampleName", how="left")
 df["d18O_offset"] = df["d18O_AC"]-df["d18O_equilibrium"]
 df["Dp17O_offset"] = df["Dp17O_AC"]-df["Dp17O_equilibrium"]
 
-
-# Figure paramters valid for all figures in this script
-plt.rcParams.update({'font.size': 6})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5  # error bar width
-plt.rcParams["patch.linewidth"] = 0.5  # marker edge width
-plt.rcParams["figure.figsize"] = (9, 4)
-plt.rcParams['savefig.dpi'] = 600
-
 # Calculate the effective theta for coral vital effects
 
 # # MONTE CARLO SIMULATION
@@ -333,10 +343,10 @@ cat2 = df["Type"].unique()
 colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 
 
-# Figure 2
+# Create Figure 2
 
 # Subplot A: Dp17O vs dp18O
-ax1 = plt.subplot(1, 2, 1)
+fig, (ax1, ax2) = plt.subplots(1, 2)
 
 # Create a separate scatter plot for each species
 for cat in cat1:
@@ -345,14 +355,12 @@ for cat in cat1:
         if len(data) > 0:
             x = prime(data["d18O_AC"])
             y = data["Dp17O_AC"]
-            xerr = data["d18O_error"]/np.sqrt(data["Replicates"])
-            yerr = data["Dp17O_error"]/np.sqrt(data["Replicates"])
+            xerr = data["d18O_error"] #/np.sqrt(data["Replicates"])
+            yerr = data["Dp17O_error"] #/np.sqrt(data["Replicates"])
             ax1.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=f"{cat}")
-            for xi, yi, xerri, yerri in zip(x, y, xerr, yerr):
-                if not (np.isnan(xerri) or np.isnan(yerri)):
-                    plt.errorbar(x, y, xerr=xerr, yerr=yerr,
-                                 fmt="none", color=colors[dog], zorder=0)
+            ax1.errorbar(x, y, xerr=xerr, yerr=yerr,
+                            fmt="none", color=colors[dog], zorder=0)
     
 # Plot quilibrium points
 ax1.scatter(prime(df["d18O_equilibrium"]), df["Dp17O_equilibrium"],
@@ -367,13 +375,13 @@ for i in range(len(df)):
              [df["Dp17O_AC"][i], df["Dp17O_equilibrium"][i]],
              c="#cacaca", ls="dashed", lw=0.8, zorder=-1)
 
-plt.text(0.08, 0.98, "a", size=14, ha="right", va="top",
+ax1.text(0.08, 0.98, "a", size=14, ha="right", va="top",
          transform=ax1.transAxes, fontweight="bold")
-plt.ylabel("$\Delta^{\prime 17}$O (ppm, VSMOW)")
-plt.xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
+
+ax1.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
+ax1.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
 # Subplot B: Disequilibrium Dp17O and d18O values
-ax2 = plt.subplot(1, 2, 2)
 
 for cat in cat1:
     for dog in cat2:
@@ -381,13 +389,13 @@ for cat in cat1:
         if len(data) > 0:
             x = data["d18O_offset"]
             y = data["Dp17O_offset"]
-            xerr = data["d18O_error"]/np.sqrt(data["Replicates"])
-            yerr = data["Dp17O_error"]/np.sqrt(data["Replicates"])
+            xerr = data["d18O_error"] #/np.sqrt(data["Replicates"])
+            yerr = data["Dp17O_error"] #/np.sqrt(data["Replicates"])
             ax2.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=cat)
             for xi, yi, xerri, yerri in zip(x, y, xerr, yerr):
                 if not (np.isnan(xerri) or np.isnan(yerri)):
-                    plt.errorbar(x, y,
+                    ax2.errorbar(x, y,
                                  xerr=xerr, yerr=yerr,
                                  fmt="none", color=colors[dog], zorder=0)
 
@@ -404,63 +412,62 @@ for i in range(len(df)):
 # Plot equilibrium point
 mean_xerr = np.mean(df["d18O_equilibrium_err"])
 mean_yerr = np.mean(df["Dp17O_equilibrium_err"])
-plt.scatter(0, 0,
+ax2.scatter(0, 0,
             marker="x", color="#747067", lw=1.5, label="Equilibrium", zorder=10)
-plt.errorbar(0, 0,
+ax2.errorbar(0, 0,
              xerr=mean_xerr, yerr=mean_yerr,
              fmt="none", color="#747067", zorder=-1)
 
 # Add isoDIC models
-plt.plot(isoDIC_cwc["Offset18"], isoDIC_cwc["Offset17"]*1000,
+ax2.plot(isoDIC_cwc["Offset18"], isoDIC_cwc["Offset17"]*1000,
          c="lightblue", ls="solid", zorder=-1, lw=1)
-        #  label="IsoDIC: CWC")
-plt.plot(isoDIC_wwc["Offset18"], isoDIC_wwc["Offset17"]*1000,
+ax2.plot(isoDIC_wwc["Offset18"], isoDIC_wwc["Offset17"]*1000,
          c="pink", ls="solid", zorder=-1, lw=1)
-        #  label="IsoDIC: WWC")
 ax2.text(-2, -30,
          "CO$_2$ absorbtion",
          ha="left", va="center", color="k")
 
 # Add diffusion vector
+theta_diff = (np.log((12+16+16)/(12+17+16)))/(np.log((12+16+16)/(12+18+16)))
+print(f'The theta for diffusion is {theta_diff:.3f}')
 shift_d18O = -1
 A = (0, 0)
-B = (shift_d18O, apply_theta(0, 0, shift_d18O=shift_d18O, theta=0.505))
+B = (shift_d18O, apply_theta(0, 0, shift_d18O=shift_d18O, theta=theta_diff))
 ax2.annotate("",
-            (A[0], A[1]),
-            xytext=(B[0], B[1]),
-            ha = "center", va = "center", zorder = -1,
-            arrowprops=dict(arrowstyle="<|-", color="#FF7A00", lw=1.5))
+             (A[0], A[1]),
+             xytext=(B[0], B[1]),
+             ha="center", va="center", zorder=-1,
+             arrowprops=dict(arrowstyle="<|-", color="#FF7A00", lw=1))
 ax2.text(B[0], B[1]-5,
          "diffusion",
          ha="right", va="center", color="#FF7A00")
 
 # Add legend and format species names to italic
-legend = plt.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
+legend = ax2.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
 for text in legend.texts:
     text.set_fontsize(5.5)
     if 'Equilibrium' not in text.get_text() and 'vent coral' not in text.get_text():
         text.set_fontstyle('italic')
 
-plt.text(0.08, 0.98, "b", size=14, ha="right", va="top",
+ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
          transform=ax2.transAxes, fontweight="bold")
 
 # Axis properties
-plt.ylabel("$\Delta^{\prime 17}$O$_{measured}$ - $\Delta^{\prime 17}$O$_{expected}$ (ppm, VSMOW)")
-plt.xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
+ax2.set_ylabel("$\Delta^{\prime 17}$O$_{measured}$ - $\Delta^{\prime 17}$O$_{expected}$ (ppm)")
+ax2.set_xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
+
 plt.xlim(-7.5, 0.5)
 plt.ylim(-85, 25)
 
-plt.savefig(sys.path[0] + "/SK Figure 2.png", bbox_inches='tight')
+plt.savefig(sys.path[0] + "/SK Figure 2.png")
 plt.close()
 
-# # Save data for the Excel people
-df = df.round(4)
+# Save data to CSV file
 df.to_csv(sys.path[0] + "/SK Table S-3 part-3.csv", index=False)
 
 
-
 # Figure 1
-ax = plt.subplots(1, 1, figsize=(4, 4))[1]
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Plot seawater
 plt.text(4, 0, "seawater", ha="left", va="center", c="#004B6D")
@@ -526,26 +533,26 @@ for cat in cat1:
         if len(data) > 0:
             x = prime(data["d18O_AC"])
             y = data["Dp17O_AC"]
-            xerr = data["d18O_error"]/np.sqrt(data["Replicates"])
-            yerr = data["Dp17O_error"]/np.sqrt(data["Replicates"])
+            xerr = data["d18O_error"] #/np.sqrt(data["Replicates"])
+            yerr = data["Dp17O_error"] #/np.sqrt(data["Replicates"])
             ax.scatter(x, y,
                        marker=markers[cat], fc=colors[dog], label=f"{cat}")
-            for xi, yi, xerri, yerri in zip(x, y, xerr, yerr):
-                if not (np.isnan(xerri) or np.isnan(yerri)):
-                    plt.errorbar(x, y, xerr=xerr, yerr=yerr,
-                                 fmt="none", color=colors[dog], zorder=0)
+            ax.errorbar(x, y, xerr=xerr, yerr=yerr,
+                        fmt="none", color=colors[dog], zorder=0)
 
 # Label the coral groups
-ax.text(33, -121, "cold-water\ncorals", ha="left", va="center", color="#1455C0")
-ax.text(25, -80, "warm-water\ncorals", ha="right", va="center", color="#EC0016")
+ax.text(33, -121, "cold-water\ncorals",
+        ha="left", va="center", color="#1455C0")
+ax.text(25, -80, "warm-water\ncorals",
+        ha="right", va="center", color="#EC0016")
 
 # Axis properties
 plt.xlim(-2, 42)
 plt.ylim(-130, 10)
-plt.ylabel("$\Delta^{\prime 17}$O (ppm, VSMOW)")
+plt.ylabel("$\Delta^{\prime 17}$O (ppm)")
 plt.xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
-plt.savefig(sys.path[0] + "/SK Figure 1.png", bbox_inches='tight')
+plt.savefig(sys.path[0] + "/SK Figure 1.png")
 plt.close()
 
 
@@ -648,5 +655,5 @@ x_scale = fig.get_size_inches()[0]*600 / im.shape[1]
 resized_im = zoom(im, (y_scale, x_scale, 1))
 fig.figimage(resized_im, zorder = -12)
 
-plt.savefig(sys.path[0] + "/SK Graphical abstract.png", bbox_inches='tight')
-plt.close()
+plt.savefig(sys.path[0] + "/SK Graphical Abstract.png")
+plt.close("all")
