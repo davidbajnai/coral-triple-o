@@ -341,6 +341,8 @@ for cat in cat1:
 
 ax1.set_xlim(-1, 31)
 ax1.set_ylim(-6, 66)
+ylim = ax1.get_ylim()
+xlim = ax1.get_xlim()
 
 # 1:1 line
 ax1.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
@@ -386,6 +388,9 @@ ax2.set_xlabel("Measured growth temperature (°C)")
 
 ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
          transform=ax2.transAxes, fontweight="bold")
+
+ax2.set_ylim(ylim)
+ax2.set_xlim(xlim)
 
 plt.savefig(sys.path[0] + "/SK Figure 3.png")
 plt.close("all")

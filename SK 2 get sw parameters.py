@@ -155,6 +155,11 @@ df = df_measurements.merge(
 # Save data to CSV
 df.to_csv(sys.path[0] + "/SK Table S-3 part-2.csv", index=False)
 
+# Mean temperature of the warm-water corals
+print("Mean temperature of the warm-water corals: " +
+	  f'{df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.0f} °C')
+print("\nMean temperature of the cold-water corals: " +
+	  f'{df[df["Type"] == "cold-water coral"]["T_modeled"].mean():.0f} °C')
 
 # Create Figure S3
 

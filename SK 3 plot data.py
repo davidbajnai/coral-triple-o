@@ -199,8 +199,11 @@ def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fl
 swdf = pd.read_csv(sys.path[0] + "/seawater.csv", sep=",")
 
 # isoDIC models
+isoDIC_header = pd.read_csv(sys.path[0] + "/isoDIC_header.csv", sep=",")
 isoDIC_cwc = pd.read_csv(sys.path[0] + "/isoDIC_cwc.csv", sep=",")
+isoDIC_cwc.columns = isoDIC_header.columns
 isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_wwc.csv", sep=",")
+isoDIC_wwc.columns = isoDIC_header.columns
 
 df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-2.csv", sep=",")
 
@@ -419,13 +422,19 @@ ax2.errorbar(0, 0,
              fmt="none", color="#747067", zorder=-1)
 
 # Add isoDIC models
-ax2.plot(isoDIC_cwc["Offset18"], isoDIC_cwc["Offset17"]*1000,
-         c="lightblue", ls="solid", zorder=-1, lw=1)
-ax2.plot(isoDIC_wwc["Offset18"], isoDIC_wwc["Offset17"]*1000,
-         c="pink", ls="solid", zorder=-1, lw=1)
-ax2.text(-2, -30,
+ax2.plot(isoDIC_wwc["d18_CO3"]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO3"]-isoDIC_wwc["D17_CO3"].iloc[0],
+         c="darkred", ls="solid", zorder=3, lw=1)
+ax2.plot(isoDIC_cwc["d18_CO3"]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"]-isoDIC_cwc["D17_CO3"].iloc[0],
+         c="darkblue", ls="solid", zorder=3, lw=1)
+ax2.text(-1, -30,
          "CO$_2$ absorbtion",
-         ha="left", va="center", color="k")
+         ha="center", va="center", color="k")
+ax2.text(-1, -35,
+         r"$\it{T}$ = 9 °C, pH = 8.8",
+         ha="center", va="center", color="darkblue")
+ax2.text(-1, -40,
+         r"$\it{T}$ = 27 °C, pH = 8.5",
+         ha="center", va="center", color="darkred")
 
 # Add diffusion vector
 theta_diff = (np.log((12+16+16)/(12+17+16)))/(np.log((12+16+16)/(12+18+16)))
@@ -456,7 +465,7 @@ ax2.set_ylabel("$\Delta^{\prime 17}$O$_{measured}$ - $\Delta^{\prime 17}$O$_{exp
 ax2.set_xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
 
 plt.xlim(-7.5, 0.5)
-plt.ylim(-85, 25)
+plt.ylim(-70, 25)
 
 plt.savefig(sys.path[0] + "/SK Figure 2.png")
 plt.close()
