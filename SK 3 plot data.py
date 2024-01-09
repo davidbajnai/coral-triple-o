@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
 
+
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
 plt.rcParams.update({'font.size': 7})
@@ -40,7 +41,7 @@ def a18_cc(T):
     B_water = -6.705843E+15 / T**7 + 1.333519E+14 / T**6 + -1.114055E+12 / T**5 + 5.090782E+09 / T**4 + -1.353889E+07 / T**3 + 2.143196E+04 / T**2 + 5.689300 / T + -7.839005E-03
     return np.exp(B_calcite) / np.exp(B_water)
 
-    # Use this for Figure S4
+    # Use this for Figure S-4
     # return np.exp((2.84 * 10**6 / T**2 - 2.96) / 1000) # Wostbrock et al. (2020) – calcite
     
     # Alternative equations
@@ -147,13 +148,15 @@ def cc_equilibrium(T, T_err, d18Ow, d18Ow_err, Dp17Ow, Dp17Ow_err, Sample=None):
     return df
 
 
-def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fluid", color="k", highlight=True):
+def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fluid", color="k", highlight=True, mark_water = True):
 
     d17Ow = unprime(0.528 * prime(d18Ow) + Dp17Ow/1000)
 
-    ax.scatter(prime(d18Ow), Dp17O(d17Ow, d18Ow),
-               marker="X", fc=color, ec="w",
-               zorder=10, label=fluid_name)
+    # mark water
+    if mark_water == True:
+        ax.scatter(prime(d18Ow), Dp17O(d17Ow, d18Ow),
+                marker="X", fc=color, ec="w",
+                zorder=10, label=fluid_name)
 
     # equilibrium line, entire T range
     toInf = np.arange(Tmin, Tmax, 1)
@@ -206,8 +209,6 @@ isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_wwc.csv", sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
 
 df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-2.csv", sep=",")
-
-# df = df[df["SampleName"].isin(["SK-GeoB", "SK-PL7"])]
 
 # Set Dp17Osw and Dp17Osw_err
 df["Dp17Osw"], df["Dp17Osw_err"] = -11, 6
@@ -422,10 +423,32 @@ ax2.errorbar(0, 0,
              fmt="none", color="#747067", zorder=-1)
 
 # Add isoDIC models
+cwc_target = (isoDIC_cwc["time(s)"] - 15*60).abs().idxmin()
+wwc_target = (isoDIC_wwc["time(s)"] - 15*60).abs().idxmin()
+
 ax2.plot(isoDIC_wwc["d18_CO3"]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO3"]-isoDIC_wwc["D17_CO3"].iloc[0],
          c="darkred", ls="solid", zorder=3, lw=1)
 ax2.plot(isoDIC_cwc["d18_CO3"]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"]-isoDIC_cwc["D17_CO3"].iloc[0],
          c="darkblue", ls="solid", zorder=3, lw=1)
+# ax2.plot(isoDIC_wwc["d18_CO3"].iloc[wwc_target]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO3"].iloc[wwc_target]-isoDIC_wwc["D17_CO3"].iloc[0],
+#          c="darkred", marker="|", zorder=3)
+# ax2.plot(isoDIC_cwc["d18_CO3"].iloc[cwc_target]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"].iloc[cwc_target]-isoDIC_cwc["D17_CO3"].iloc[0],
+#          c="darkblue", marker="|", zorder=3)
+ax2.annotate("",
+             (isoDIC_wwc["d18_CO3"].iloc[wwc_target]-isoDIC_wwc["d18_CO3"].iloc[0],
+              isoDIC_wwc["D17_CO3"].iloc[wwc_target]-isoDIC_wwc["D17_CO3"].iloc[0]),
+             (isoDIC_wwc["d18_CO3"].iloc[wwc_target-1]-isoDIC_wwc["d18_CO3"].iloc[0],
+              isoDIC_wwc["D17_CO3"].iloc[wwc_target-1]-isoDIC_wwc["D17_CO3"].iloc[0]),
+             ha="center", va="center", zorder=-1,
+             arrowprops=dict(arrowstyle="->", color="darkred", lw=1))
+ax2.annotate("",
+             (isoDIC_cwc["d18_CO3"].iloc[cwc_target]-isoDIC_cwc["d18_CO3"].iloc[0],
+              isoDIC_cwc["D17_CO3"].iloc[cwc_target]-isoDIC_cwc["D17_CO3"].iloc[0]),
+             (isoDIC_cwc["d18_CO3"].iloc[cwc_target-1]-isoDIC_cwc["d18_CO3"].iloc[0],
+              isoDIC_cwc["D17_CO3"].iloc[cwc_target-1]-isoDIC_cwc["D17_CO3"].iloc[0]),
+             ha="center", va="center", zorder=-1,
+             arrowprops=dict(arrowstyle="->", color="darkblue", lw=1))
+
 ax2.text(-1, -30,
          "CO$_2$ absorbtion",
          ha="center", va="center", color="k")
@@ -591,7 +614,7 @@ ax.tick_params(axis='y', colors='w')
 # Plot equilibrium and annotate the temperature range
 df_eq = plot_equilibrium(Dp17Ow=-11, d18Ow=1,
                          Tmin=0, Tmax=100,
-                         ax=ax, fluid_name="seawater", color="w", highlight=False)
+                         ax=ax, fluid_name="seawater", color="w", highlight=False, mark_water=False)
 
 plt.text(df_eq["d18O"].iloc[-1], df_eq["Dp17O"].iloc[-1], "equilibrium\n(0–100 °C)", ha="right", va="center", c="w")
 

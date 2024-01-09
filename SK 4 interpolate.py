@@ -352,7 +352,7 @@ angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax1.text(20, 18, "1:1", ha="center", va="center", rotation=angle)
 
 ax1.set_ylabel(r"Temperature from $\delta^{18}O$-thermometry (°C)")
-ax1.set_xlabel(r"Measured growth temperature (°C)")
+ax1.set_xlabel("Growth temperature (°C)")
 
 ax1.text(0.08, 0.98, "a", size=14, ha="right", va="top",
          transform=ax1.transAxes, fontweight="bold")
@@ -384,7 +384,7 @@ for text in legend.texts:
     text.set_fontstyle('italic')
 
 ax2.set_ylabel(r"Temperature corrected for 'vital effects' ($\it{T}_{\Delta\prime^{17}O}$, °C)")
-ax2.set_xlabel("Measured growth temperature (°C)")
+ax2.set_xlabel("Growth temperature (°C)")
 
 ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
          transform=ax2.transAxes, fontweight="bold")
