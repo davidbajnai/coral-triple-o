@@ -2,7 +2,7 @@
 # and calculate the vital effect theta
 
 # INPUT: SK Table S-3 part-2.csv, seawater.csv, isoDIC_cwc.csv, isoDIC_wwc.csv
-# OUTPUT: SK Figure 2.png, SK Figure S4.png, SK Table S-3 part-3.csv
+# OUTPUT: SK Figure 2.png, SK Figure S4.png, (SK Figure S5.png), SK Table S-3 part-3.csv
 
 # >>>>>>>>>
 
@@ -203,10 +203,15 @@ swdf = pd.read_csv(sys.path[0] + "/seawater.csv", sep=",")
 
 # isoDIC models
 isoDIC_header = pd.read_csv(sys.path[0] + "/isoDIC_header.csv", sep=",")
-isoDIC_cwc = pd.read_csv(sys.path[0] + "/isoDIC_cwc.csv", sep=",")
+isoDIC_cwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.8_T9.csv", sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
-isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_wwc.csv", sep=",")
+isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.5_T27.csv", sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
+
+isoDIC_cwc2 = pd.read_csv(sys.path[0] + "/isoDIC_pH8.5_T9.csv", sep=",")
+isoDIC_cwc2.columns = isoDIC_header.columns
+isoDIC_wwc2 = pd.read_csv(sys.path[0] + "/isoDIC_pH8.8_T27.csv", sep=",")
+isoDIC_wwc2.columns = isoDIC_header.columns
 
 df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-2.csv", sep=",")
 
@@ -347,7 +352,7 @@ cat2 = df["Type"].unique()
 colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 
 
-# Create Figure 2
+# CREATE FIGURE 2
 
 # Subplot A: Dp17O vs dp18O
 fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -497,7 +502,7 @@ plt.close()
 df.to_csv(sys.path[0] + "/SK Table S-3 part-3.csv", index=False)
 
 
-# Figure 1
+# CREATE FIGURE 1
 fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Plot seawater
@@ -584,6 +589,63 @@ plt.ylabel("$\Delta^{\prime 17}$O (ppm)")
 plt.xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
 plt.savefig(sys.path[0] + "/SK Figure 1.png")
+plt.close()
+
+
+# CREATE FIGURE S4
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
+
+# Add isoDIC models
+cwc_target = (isoDIC_cwc["time(s)"] - 15*60).abs().idxmin()
+wwc_target = (isoDIC_wwc["time(s)"] - 15*60).abs().idxmin()
+cwc2_target = (isoDIC_cwc2["time(s)"] - 15*60).abs().idxmin()
+wwc2_target = (isoDIC_wwc2["time(s)"] - 15*60).abs().idxmin()
+
+ax.plot(isoDIC_wwc["d18_CO3"]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO3"]-isoDIC_wwc["D17_CO3"].iloc[0],
+         c="darkred", ls="solid", zorder=1, lw=1.5)
+ax.plot(isoDIC_cwc["d18_CO3"]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"]-isoDIC_cwc["D17_CO3"].iloc[0],
+         c="darkblue", ls="solid", zorder=1, lw=1.5)
+ax.plot(isoDIC_wwc2["d18_CO3"]-isoDIC_wwc2["d18_CO3"].iloc[0], isoDIC_wwc2["D17_CO3"]-isoDIC_wwc2["D17_CO3"].iloc[0],
+         c="hotpink", ls="solid", zorder=2, lw=1)
+ax.plot(isoDIC_cwc2["d18_CO3"]-isoDIC_cwc2["d18_CO3"].iloc[0], isoDIC_cwc2["D17_CO3"]-isoDIC_cwc2["D17_CO3"].iloc[0],
+         c="cornflowerblue", ls="solid", zorder=2, lw=1)
+ax.annotate("",
+             (isoDIC_wwc["d18_CO3"].iloc[wwc_target]-isoDIC_wwc["d18_CO3"].iloc[0],
+              isoDIC_wwc["D17_CO3"].iloc[wwc_target]-isoDIC_wwc["D17_CO3"].iloc[0]),
+             (isoDIC_wwc["d18_CO3"].iloc[wwc_target-1]-isoDIC_wwc["d18_CO3"].iloc[0],
+              isoDIC_wwc["D17_CO3"].iloc[wwc_target-1]-isoDIC_wwc["D17_CO3"].iloc[0]),
+             ha="center", va="center", zorder=0,
+             arrowprops=dict(arrowstyle="->", color="darkred", lw=1.5))
+ax.annotate("",
+             (isoDIC_cwc["d18_CO3"].iloc[cwc_target]-isoDIC_cwc["d18_CO3"].iloc[0],
+              isoDIC_cwc["D17_CO3"].iloc[cwc_target]-isoDIC_cwc["D17_CO3"].iloc[0]),
+             (isoDIC_cwc["d18_CO3"].iloc[cwc_target-1]-isoDIC_cwc["d18_CO3"].iloc[0],
+              isoDIC_cwc["D17_CO3"].iloc[cwc_target-1]-isoDIC_cwc["D17_CO3"].iloc[0]),
+             ha="center", va="center", zorder=0,
+             arrowprops=dict(arrowstyle="->", color="darkblue", lw=1.5))
+ax.annotate("",
+             (isoDIC_wwc2["d18_CO3"].iloc[wwc2_target]-isoDIC_wwc2["d18_CO3"].iloc[0],
+              isoDIC_wwc2["D17_CO3"].iloc[wwc2_target]-isoDIC_wwc2["D17_CO3"].iloc[0]),
+             (isoDIC_wwc2["d18_CO3"].iloc[wwc2_target-1]-isoDIC_wwc2["d18_CO3"].iloc[0],
+              isoDIC_wwc2["D17_CO3"].iloc[wwc2_target-1]-isoDIC_wwc2["D17_CO3"].iloc[0]),
+             ha="center", va="center", zorder=2,
+             arrowprops=dict(arrowstyle="->", color="hotpink", lw=1))
+ax.annotate("",
+             (isoDIC_cwc2["d18_CO3"].iloc[cwc2_target]-isoDIC_cwc2["d18_CO3"].iloc[0],
+              isoDIC_cwc2["D17_CO3"].iloc[cwc2_target]-isoDIC_cwc2["D17_CO3"].iloc[0]),
+             (isoDIC_cwc2["d18_CO3"].iloc[cwc2_target-1]-isoDIC_cwc2["d18_CO3"].iloc[0],
+              isoDIC_cwc2["D17_CO3"].iloc[cwc2_target-1]-isoDIC_cwc2["D17_CO3"].iloc[0]),
+             ha="center", va="center", zorder=2,
+             arrowprops=dict(arrowstyle="->", color="cornflowerblue", lw=1))
+
+# Axis properties
+ax.set_ylabel("$\Delta^{\prime 17}$O$_{measured}$ - $\Delta^{\prime 17}$O$_{expected}$ (ppm)")
+ax.set_xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
+
+plt.xlim(-6.2, 0.2)
+plt.ylim(-72, 2)
+
+plt.savefig(sys.path[0] + "/SK Figure S4.png")
 plt.close()
 
 

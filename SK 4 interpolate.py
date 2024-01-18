@@ -1,3 +1,6 @@
+# INPUT: SK Table S-3 part-3.csv
+# OUTPUT: SK Figure 3.png, SK Figure S6.png, SK Table S-3.csv, SK Table S-3.xlsx
+
 # >>>>>>>>>
 
 # Import libraries
@@ -34,7 +37,7 @@ def a18_cc(T):
     B_water = -6.705843E+15 / T**7 + 1.333519E+14 / T**6 + -1.114055E+12 / T**5 + 5.090782E+09 / T**4 + -1.353889E+07 / T**3 + 2.143196E+04 / T**2 + 5.689300 / T + -7.839005E-03
     return np.exp(B_calcite) / np.exp(B_water)
 
-    # Use this for Figure S4
+    # Use this for Figure S5
     # return np.exp((2.84 * 10**6 / T**2 - 2.96) / 1000) # Wostbrock et al. (2020) – calcite
     
     # Alternative equations
@@ -52,7 +55,7 @@ def theta_cc(T):
     a18 = np.exp(B_calcite) / np.exp(B_water)
     return K_calcite + (K_calcite-K_water) * (B_water / np.log(a18))
 
-    # Use this for Figure S4
+    # Use this for Figure S5
     # return -1.39 / T + 0.5305                 # Wostbrock et al. (2020) – calcite
 
     # Alternative equations
@@ -263,16 +266,20 @@ markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
 cat2 = df["Type"].unique()
 colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 
-# Uncomment this line to produce Figure S5
+# Uncomment this line to produce Figure S6
 # df = df[df["SampleName"] == "SK-GeoB"]
 
-# Do the sensitivity analysis here
-# df["Dp17O_error"] = 4.15 - 1.3
-# print("The mean cooral Dp17Oc error is: " + str(round(df["Dp17O_error"].mean(),2)) + " ppm; " + f"∆error = {round(df['Dp17O_error'].mean() - 5.44, 2)}")
-# df["Dp17Osw_err"] = 0
-# print("The mean seawater cDp17O error is: " + str(round(df["Dp17Osw_err"].mean(),2)) + " ppm; " + f"∆error = {round(df['Dp17Osw_err'].mean() - 6, 2)}")
+# Do the sensitivity analysis here (uncomment lines to test different scenarios)
+# -> What happens if we change the measurement error
+# Dp17O_error = df["Dp17O_error"].mean()
+# df["Dp17O_error"] = Dp17O_error - 1
+# print("The mean cooral Dp17Oc error is: " + str(round(df["Dp17O_error"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17O_error'].mean() - Dp17O_error, 0)}")
+# -> What happens if we change the seawater Dp17O error
+Dp17O_error = df["Dp17Osw_err"].mean()
+df["Dp17Osw_err"] = 0
+print("The mean seawater Dp17O error is: " + str(round(df["Dp17Osw_err"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17Osw_err'].mean() - Dp17O_error, 0)}")
 
-# Figure S5 - to check if the interpolation works
+# Figure S6 - to check if the interpolation works
 fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Get the "vital effect"-corrected temperatures
@@ -317,7 +324,7 @@ ax.errorbar(prime(df["d18O_AC"]), df["Dp17O_AC"],
 ax.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
 ax.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
-plt.savefig(sys.path[0] + "/SK Figure S5.png")
+plt.savefig(sys.path[0] + "/SK Figure S6.png")
 plt.close()
 
 
