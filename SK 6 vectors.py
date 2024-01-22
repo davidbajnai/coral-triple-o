@@ -1,4 +1,4 @@
-# This script provides some of the numbers cited in the manuscript
+# This script provides some of the numbers written in the manuscript
 
 # INPUT: none
 # OUTPUT: none
