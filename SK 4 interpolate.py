@@ -190,9 +190,9 @@ def plot_equilibrium(Dp17Ow, d18Ow, ax, color="k"):
     return equilibrium_df
 
 
-def vital_vector(d18O_coral, Dp17O_coral, num_points, shift_d18O, theta_ve):
+def vital_vector(d18O_coral, Dp17O_coral, num_points, shift_d18O, theta_coral):
     new_Dp17O = apply_theta(d18O_A=d18O_coral, Dp17O_A=Dp17O_coral,
-                            shift_d18O=shift_d18O, theta=theta_ve)
+                            shift_d18O=shift_d18O, theta=theta_coral)
     x1, y1 = d18O_coral, Dp17O_coral
     x2, y2 = d18O_coral+shift_d18O, new_Dp17O
     slope2 = (y2 - y1) / (x2 - x1)
@@ -202,7 +202,7 @@ def vital_vector(d18O_coral, Dp17O_coral, num_points, shift_d18O, theta_ve):
     return pd.DataFrame({'d18O': x_values, 'Dp17O': y_values})
 
 
-def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d18O_seawater, d18O_seawater_err, Dp17O_seawater, Dp17O_seawater_err, theta_ve, ax):
+def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d18O_seawater, d18O_seawater_err, Dp17O_seawater, Dp17O_seawater_err, theta_coral, ax):
 
     shift_d18O = 15
 
@@ -214,7 +214,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
                     fmt="none", color="k", zorder=-1)
     
     # Get the vital effect line
-    df_line = vital_vector(d18O_coral, Dp17O_coral, len(df_eq["d18O"]), shift_d18O, theta_ve)
+    df_line = vital_vector(d18O_coral, Dp17O_coral, len(df_eq["d18O"]), shift_d18O, theta_coral)
 
     # Calculate the distance between points
     df_eq_f = df_eq.loc[:, ["d18O", "Dp17O"]]
@@ -231,7 +231,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     # Maximum temperature
     df_eq = plot_equilibrium(Dp17Ow=Dp17O_seawater - Dp17O_seawater_err, d18Ow=d18O_seawater + d18O_seawater_err,
                              ax=ax, color="red")
-    df_line = vital_vector(d18O_coral - d18O_coral_error, Dp17O_coral + Dp17O_coral_error, len(df_eq["d18O"]), shift_d18O, theta_ve)
+    df_line = vital_vector(d18O_coral - d18O_coral_error, Dp17O_coral + Dp17O_coral_error, len(df_eq["d18O"]), shift_d18O, theta_coral)
     df_eq_f = df_eq.loc[:, ["d18O", "Dp17O"]]
     distances = cdist(df_eq_f, df_line)
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
@@ -244,7 +244,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     # Minimum temperature
     df_eq = plot_equilibrium(Dp17Ow=Dp17O_seawater + Dp17O_seawater_err, d18Ow=d18O_seawater - d18O_seawater_err,
                              ax=ax, color="blue")
-    df_line = vital_vector(d18O_coral + d18O_coral_error, Dp17O_coral - Dp17O_coral_error, len(df_eq["d18O"]), shift_d18O, theta_ve)
+    df_line = vital_vector(d18O_coral + d18O_coral_error, Dp17O_coral - Dp17O_coral_error, len(df_eq["d18O"]), shift_d18O, theta_coral)
     df_eq_f = df_eq.loc[:, ["d18O", "Dp17O"]]
     distances = cdist(df_eq_f, df_line)
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
@@ -284,7 +284,7 @@ colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Get the "vital effect"-corrected temperatures
-theta_ve = df["theta_ve"].median()
+theta_coral = df["theta_coral"].median()
 df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       Dp17O_coral=row["Dp17O_AC"],
                                                       d18O_coral_error=row["d18O_error"],
@@ -293,9 +293,9 @@ df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       d18O_seawater_err=row["d18Osw_modeled_err"],
                                                       Dp17O_seawater=row["Dp17Osw"],
                                                       Dp17O_seawater_err=row["Dp17Osw_err"],
-                                                      theta_ve=theta_ve,
+                                                      theta_coral=theta_coral,
                                                       ax=ax),
-                                                    #   theta_ve=row["theta_ve"]),
+                                                    #   theta_coral=row["theta_coral"]),
                              axis=1)
 
 df['T_17O'], df['T_17O_error'] = zip(*df['T_17O_tuple'])

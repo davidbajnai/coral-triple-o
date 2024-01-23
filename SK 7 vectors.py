@@ -11,7 +11,7 @@ print(f"The vital effect slope is {effective_slope:.3f} if 1/3 of the total ‘v
 
 # Calculate diffusion-induced 'vital effect' percentage
 coral_slope = 0.530
-abs_values = [0.538, 0.541] # from Guo
+abs_values = [0.538, 0.541] # from Guo and Zhou (2019)
 for abs in abs_values:
     x = (1 - ((coral_slope - 0.505) / (abs - 0.505))) * 100
     print(f"\nIf the absorption slope is {abs}, then {x:.0f}% of the total ‘vital effect’ is induced by diffusion")

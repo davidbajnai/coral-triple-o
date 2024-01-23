@@ -317,26 +317,26 @@ df["Dp17O_offset"] = df["Dp17O_AC"]-df["Dp17O_equilibrium"]
 # df['theta'] = df['theta_x'].combine_first(df['theta_y'])
 # df['theta_err'] = df['theta_err_x'].combine_first(df['theta_err_y'])
 # df = df.drop(columns=['theta_x', 'theta_y', 'theta_err_x', 'theta_err_y'])
-# theta_ve = np.mean(df["theta"])
-# theta_ve_err = np.std(df["theta"])
-# print(f'The mean effective theta for coral vital effects is {theta_ve:.3f}(±{theta_ve_err:.3f})')
+# theta_coral = np.mean(df["theta"])
+# theta_coral_err = np.std(df["theta"])
+# print(f'The mean effective theta for coral vital effects is {theta_coral:.3f}(±{theta_coral_err:.3f})')
 
 
 # Calculate the effective theta for coral vital effects
-df["theta_ve"] = calculate_theta(d18O_A=df["d18O_equilibrium"], Dp17O_A=df["Dp17O_equilibrium"],
+df["theta_coral"] = calculate_theta(d18O_A=df["d18O_equilibrium"], Dp17O_A=df["Dp17O_equilibrium"],
                                  d18O_B=df["d18O_AC"], Dp17O_B=df["Dp17O_AC"])
-theta_ve = np.median(df["theta_ve"])
-theta_ve_err = np.std(df["theta_ve"])
-print(f'The median effective theta for coral vital effects is {theta_ve:.3f}(±{theta_ve_err:.3f})')
-print(f'The effective theta range is {np.min(df["theta_ve"]):.3f} to {np.max(df["theta_ve"]):.3f}')
+theta_coral = np.median(df["theta_coral"])
+theta_coral_err = np.std(df["theta_coral"])
+print(f'The median effective theta for coral vital effects is {theta_coral:.3f}(±{theta_coral_err:.3f})')
+print(f'The effective theta range is {np.min(df["theta_coral"]):.3f} to {np.max(df["theta_coral"]):.3f}')
 print("\n")
 
-theta_wwc = df[df["Type"] == "warm-water coral"]["theta_ve"].median()
-theta_wwc_err = df[df["Type"] == "warm-water coral"]["theta_ve"].std()
+theta_wwc = df[df["Type"] == "warm-water coral"]["theta_coral"].median()
+theta_wwc_err = df[df["Type"] == "warm-water coral"]["theta_coral"].std()
 print(f'The median effective theta for warm-water corals is {theta_wwc:.3f}(±{theta_wwc_err:.3f})')
 
-theta_cwc = df[df["Type"] == "cold-water coral"]["theta_ve"].median()
-theta_cwc_err = df[df["Type"] == "cold-water coral"]["theta_ve"].std()
+theta_cwc = df[df["Type"] == "cold-water coral"]["theta_coral"].median()
+theta_cwc_err = df[df["Type"] == "cold-water coral"]["theta_coral"].std()
 print(f'The median effective theta for cold-water corals is {theta_cwc:.3f}(±{theta_cwc_err:.3f})')
 
 
@@ -548,13 +548,13 @@ shift_d18O = -10
 A = (prime(df_eq_T.iloc[0, 0]),
      df_eq_T.iloc[0, 1])
 B = (prime(df_eq_T.iloc[0, 0]+shift_d18O),
-     apply_theta(df_eq_T.iloc[0, 0], df_eq_T.iloc[0, 1], shift_d18O=shift_d18O, theta=theta_ve))
+     apply_theta(df_eq_T.iloc[0, 0], df_eq_T.iloc[0, 1], shift_d18O=shift_d18O, theta=theta_coral))
 ax.annotate("",
             (A[0], A[1]),
             (B[0], B[1]),
             ha="center", va="center", zorder=-1,
             arrowprops=dict(arrowstyle="<|-", color="#FF7A00", lw=1.5))
-ax.text(B[0], B[1], '"vital effects"\n'+ r'($\theta_{effective}$ = '+ f'{theta_ve:.3f})',
+ax.text(B[0], B[1], '"vital effects"\n'+ r'($\theta_{effective}$ = '+ f'{theta_coral:.3f})',
         ha="right", va="center", color="#FF7A00")
 
 # Create a separate scatter plot for each species
@@ -623,13 +623,13 @@ shift_d18O = -10
 A = (prime(df_eq_T.iloc[0, 0]),
      df_eq_T.iloc[0, 1])
 B = (prime(df_eq_T.iloc[0, 0]+shift_d18O),
-     apply_theta(df_eq_T.iloc[0, 0], df_eq_T.iloc[0, 1], shift_d18O=shift_d18O, theta=theta_ve))
+     apply_theta(df_eq_T.iloc[0, 0], df_eq_T.iloc[0, 1], shift_d18O=shift_d18O, theta=theta_coral))
 ax.annotate("",
             (A[0], A[1]),
             (B[0], B[1]),
             ha="center", va="center", zorder=-1,
             arrowprops=dict(arrowstyle="<|-", color="w", lw=1.5))
-ax.text(B[0], B[1], r"$\bf{coral}$" +"\n"+ r"$\bf{'vital}$ $\bf{effects'}$" + "\n" + f"($\\theta_{{effective}}$ = {theta_ve:.3f})",
+ax.text(B[0], B[1], r"$\bf{coral}$" +"\n"+ r"$\bf{'vital}$ $\bf{effects'}$" + "\n" + f"($\\theta_{{coral}}$ = {theta_coral:.3f})",
         ha="right", va="center", color="w")
 
 # Mark the warm-water coral apparent and growth temperatures
