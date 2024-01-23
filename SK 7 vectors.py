@@ -11,17 +11,19 @@ print(f"The vital effect slope is {effective_slope:.3f} if 1/3 of the total ‘v
 
 # Calculate diffusion-induced 'vital effect' percentage
 coral_slope = 0.530
-abs_values = [0.538, 0.541]
+abs_values = [0.538, 0.541] # from Guo
 for abs in abs_values:
     x = (1 - ((coral_slope - 0.505) / (abs - 0.505))) * 100
     print(f"\nIf the absorption slope is {abs}, then {x:.0f}% of the total ‘vital effect’ is induced by diffusion")
 
 
 # Calculate absorption slopes with revised theta estimates from Bajnai et al. (2023)
+theta_hydrox = 0.532
+theta_hydra = 0.531
 hydrox_contrib = [0.5, 0.8]
 abs_values = []
 for hydrx in hydrox_contrib:
-    abs = 0.532 * hydrx + 0.526 * (1-hydrx)
+    abs = theta_hydrox * hydrx + theta_hydra * (1-hydrx)
     abs_values.append(abs)  # Append the calculated abs value to the list
     print(f"\nThe absorption slope is {abs:.3f}, with {hydrx*100:.0f}% of the total ‘vital effect’ induced by hydroxylation")
 

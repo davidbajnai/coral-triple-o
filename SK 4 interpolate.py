@@ -266,20 +266,21 @@ markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
 cat2 = df["Type"].unique()
 colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 
-# Uncomment this line to produce Figure S6
-# df = df[df["SampleName"] == "SK-GeoB"]
-
 # Do the sensitivity analysis here (uncomment lines to test different scenarios)
 # -> What happens if we change the measurement error
 # Dp17O_error = df["Dp17O_error"].mean()
 # df["Dp17O_error"] = Dp17O_error - 1
 # print("The mean cooral Dp17Oc error is: " + str(round(df["Dp17O_error"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17O_error'].mean() - Dp17O_error, 0)}")
 # -> What happens if we change the seawater Dp17O error
-Dp17O_error = df["Dp17Osw_err"].mean()
-df["Dp17Osw_err"] = 0
-print("The mean seawater Dp17O error is: " + str(round(df["Dp17Osw_err"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17Osw_err'].mean() - Dp17O_error, 0)}")
+# Dp17O_error = df["Dp17Osw_err"].mean()
+# df["Dp17Osw_err"] = 0
+# print("The mean seawater Dp17O error is: " + str(round(df["Dp17Osw_err"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17Osw_err'].mean() - Dp17O_error, 0)}")
 
 # Figure S6 - to check if the interpolation works
+
+# Uncomment this line to produce Figure S6
+# df = df[df["SampleName"] == "SK-GeoB"]
+
 fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Get the "vital effect"-corrected temperatures
