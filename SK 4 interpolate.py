@@ -305,14 +305,14 @@ df["T_18O"], df["T_18O_error"] = get_18O_temp(df["d18O_AC"], df["d18O_error"],
 print(f'The mean error of the 17O-based temperatures is: {df["T_17O_error"].mean():.1f} °C')
 print(f'The mean error of the 18O-based temperatures is: {df["T_18O_error"].mean():.1f} °C')
 
-# Print  the temperature differnce
-print("\nThe average difference between the 17O-based and the MODELED temperatures:")
-print(f'{df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_modeled"].mean():.1f} °C (COLD-WATER CORALS)')
-print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.1f} °C (WARM-WATER CORALS)')
+# Print  the temperature differnce - not used in the paper
+# print("\nThe average difference between the 17O-based and the MODELED temperatures:")
+# print(f'{df[(df["Type"] == "cold-water coral")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral")]["T_modeled"].mean():.1f} °C (COLD-WATER CORALS)')
+# print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.1f} °C (WARM-WATER CORALS)')
 
-print("\nThe average difference between the 17O-based and the MEASURED temperatures: ")
-print(f'{df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral") & (df["SampleName"] != "SK-LostCity")]["T_measured"].mean():.1f} °C (COLD-WATER CORALS)')
-print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_measured"].mean():.1f} °C (WARM-WATER CORALS)')
+# print("\nThe average difference between the 17O-based and the MEASURED temperatures: ")
+# print(f'{df[(df["Type"] == "cold-water coral")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral")]["T_measured"].mean():.1f} °C (COLD-WATER CORALS)')
+# print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_measured"].mean():.1f} °C (WARM-WATER CORALS)')
 
 # Create a separate scatter plot for each species
 ax.scatter(prime(df["d18O_AC"]), df["Dp17O_AC"],

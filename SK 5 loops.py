@@ -91,7 +91,13 @@ ax1.annotate("",
              arrowprops=dict(arrowstyle="->", color="cornflowerblue", lw=1))
 
 # Add the equilibrium point
-ax1.scatter(0, 0, marker="x", color="#747067", label="Equilibrium", zorder=10, lw=1.5)
+ax1.scatter(0, 0, marker="X", color="#747067", label="Equilibrium", zorder=10, lw=1.5)
+
+# Show the commonly achieved measurement precision
+ax1.text(0.98, 0.02, "Commonly achieved\nmeasurement precision", size=6, ha="right", va="bottom", transform=ax1.transAxes)
+ax1.errorbar(-0.5, -60,
+             xerr=0.05, yerr=5,
+             fmt="none", color="k", lw =.8)
 
 # Axis properties
 ax1.legend(loc='upper right', bbox_to_anchor=(2.65, 1))
@@ -100,7 +106,7 @@ ax1.text(0.02, 0.98, "a", size=14, ha="left", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
 ax1.set_ylabel("$\Delta^{\prime 17}O$ disequilibrium (ppm)")
-ax1.set_xlabel("$\delta^{18}$O$ disequilibrium (‰)")
+ax1.set_xlabel("$\delta^{18}O$ disequilibrium (‰)")
 
 ax1.set_xlim(-6.2, 0.2)
 ax1.set_ylim(-72, 2)
@@ -148,7 +154,13 @@ ax2.annotate("",
              arrowprops=dict(arrowstyle="->", color="cornflowerblue", lw=1))
 
 # Add the equilibrium point
-ax2.scatter(0, 0, marker="x", color="#747067", label="Equilibrium", zorder=10, lw=1.5)
+ax2.scatter(0, 0, marker="X", color="#747067", label="Equilibrium", zorder=10, lw=1.5)
+
+# Show the commonly achieved measurement precision
+ax2.text(0.98, 0.02, "Commonly achieved\nmeasurement precision", size=6, ha="right", va="bottom", transform=ax2.transAxes)
+ax2.errorbar(-0.025, -0.065,
+             xerr=0.020, yerr=0.006,
+             fmt="none", color="k", lw =.8)
 
 # Axis properties
 ax2.text(0.02, 0.98, "b", size=14, ha="left", va="top",
