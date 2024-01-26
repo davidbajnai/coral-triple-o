@@ -223,106 +223,6 @@ df["d18O_offset"] = df["d18O_AC"]-df["d18O_equilibrium"]
 df["Dp17O_offset"] = df["Dp17O_AC"]-df["Dp17O_equilibrium"]
 
 # Calculate the effective theta for coral vital effects
-
-# # MONTE CARLO SIMULATION
-# monte_carlo_iterations = 10**3
-
-# # SIMULATION FOR COLD-WATER CORALS
-# df_cwc = df[df["Type"] == "cold-water coral"].reset_index(drop=True)
-# df_cwc["theta"] = np.nan
-# df_cwc["theta_err"] = np.nan
-# # Plots for testing the monte carlo simulation
-# # plt.plot(prime(df_cwc["d18O_equilibrium"]), df_cwc["Dp17O_equilibrium"],
-# #          marker="x", color="gray")
-# # plt.errorbar(prime(df_cwc["d18O_equilibrium"]), df_cwc["Dp17O_equilibrium"],
-# #              xerr=df_cwc["d18O_equilibrium_err"], yerr=df_cwc["Dp17O_equilibrium_err"],
-# #              fmt="none", color="gray", elinewidth=0.8)
-# # plt.plot(prime(df_cwc["d18O_AC"]), df_cwc["Dp17O_AC"],
-# #          marker="x", color="blue")
-# # plt.errorbar(prime(df_cwc["d18O_AC"]), df_cwc["Dp17O_AC"],
-# #              xerr=df_cwc["d18O_error"]/np.sqrt(df_cwc["Replicates"]), yerr=df_cwc["Dp17O_error"]/np.sqrt(df_cwc["Replicates"]),
-# #              fmt="none", color="blue", elinewidth=0.8)
-# for i in range(len(df_cwc)):
-#     theta_cwc_lst = []
-#     for _ in range(monte_carlo_iterations):
-
-#         d18O_equilibrium = np.random.normal(df_cwc["d18O_equilibrium"].iloc[i], df_cwc["d18O_equilibrium_err"].iloc[i])
-#         Dp17O_equilibrium = np.random.normal(df_cwc["Dp17O_equilibrium"].iloc[i], df_cwc["Dp17O_equilibrium_err"].iloc[i])
-#         d18O_measured = np.random.normal(df_cwc["d18O_AC"].iloc[i], df_cwc["d18O_error"].iloc[i])
-#         Dp17O_measured = np.random.normal(df_cwc["Dp17O_AC"].iloc[i], df_cwc["Dp17O_error"].iloc[i])
-
-#         # plt.plot([prime(d18O_equilibrium), prime(d18O_measured)],
-#         #             [Dp17O_equilibrium, Dp17O_measured],
-#         #             c="lightblue", ls="solid", lw=0.8, zorder=-1, alpha=0.2)
-
-#         result_theta = calculate_theta(d18O_A=d18O_equilibrium, Dp17O_A=Dp17O_equilibrium,
-#                                        d18O_B=d18O_measured, Dp17O_B=Dp17O_measured)
-
-
-#         theta_cwc_lst.append(result_theta)
-#     df_cwc.loc[i, "theta"] = np.mean(theta_cwc_lst)
-#     df_cwc.loc[i, "theta_err"] = np.std(theta_cwc_lst)
-
-# df_cwc = df_cwc.loc[:, ["SampleName", "theta", "theta_err"]]
-
-# theta_cwc = np.mean(df_cwc["theta"])
-# theta_cwc_err = np.std(df_cwc["theta"])
-# print(f'The mean effective theta for cold-water corals is {theta_cwc:.3f}(±{theta_cwc_err:.3f})')
-
-# # SIMULATION FOR WARM-WATER CORALS
-# df_wwc = df[df["Type"] == "warm-water coral"].reset_index(drop=True)
-# df_wwc["theta"] = np.nan
-# df_wwc["theta_err"] = np.nan
-# # Plots for testing the monte carlo simulation
-# # plt.plot(prime(df_wwc["d18O_equilibrium"]), df_wwc["Dp17O_equilibrium"],
-# #          marker="x", color="gray")
-# # plt.errorbar(prime(df_wwc["d18O_equilibrium"]), df_wwc["Dp17O_equilibrium"],
-# #                 xerr=df_wwc["d18O_equilibrium_err"], yerr=df_wwc["Dp17O_equilibrium_err"],
-# #                 fmt="none", color="gray", elinewidth=0.8)
-# # plt.plot(prime(df_wwc["d18O_AC"]), df_wwc["Dp17O_AC"],
-# #         marker="x", color="red", label="Sample")
-# # plt.errorbar(prime(df_wwc["d18O_AC"]), df_wwc["Dp17O_AC"],
-# #                 xerr=df_wwc["d18O_error"]/np.sqrt(df_wwc["Replicates"]), yerr=df_wwc["Dp17O_error"]/np.sqrt(df_wwc["Replicates"]),
-# #                 fmt="none", color="red", elinewidth=0.8)
-# for i in range(len(df_wwc)):
-#     theta_wwc_lst = []
-#     for _ in range(monte_carlo_iterations):
-
-#         d18O_equilibrium = np.random.normal(df_wwc["d18O_equilibrium"].iloc[i], df_wwc["d18O_equilibrium_err"].iloc[i])
-#         Dp17O_equilibrium = np.random.normal(df_wwc["Dp17O_equilibrium"].iloc[i], df_wwc["Dp17O_equilibrium_err"].iloc[i])
-#         d18O_measured = np.random.normal(df_wwc["d18O_AC"].iloc[i], df_wwc["d18O_error"].iloc[i])
-#         Dp17O_measured = np.random.normal(df_wwc["Dp17O_AC"].iloc[i], df_wwc["Dp17O_error"].iloc[i])
-        
-#         # plt.plot([prime(d18O_equilibrium), prime(d18O_measured)],
-#         #          [Dp17O_equilibrium, Dp17O_measured],
-#         #          c="pink", ls="solid", lw=0.8, zorder=-1, alpha=0.2)
-
-#         result_theta = calculate_theta(d18O_A=d18O_equilibrium, Dp17O_A=Dp17O_equilibrium,
-#                                        d18O_B=d18O_measured, Dp17O_B=Dp17O_measured)
-#         theta_wwc_lst.append(result_theta)
-#     df_wwc.loc[i, "theta"] = np.mean(theta_wwc_lst)
-#     df_wwc.loc[i, "theta_err"] = np.std(theta_wwc_lst)
-# df_wwc = df_wwc.loc[:, ["SampleName", "theta", "theta_err"]]
-
-# # plt.savefig(sys.path[0] + "/SK Figure MC test.png", bbox_inches='tight')
-# # plt.close()
-
-# theta_wwc = np.mean(df_wwc["theta"])
-# theta_wwc_err = np.std(df_wwc["theta"])
-# print(f'The mean effective theta for warm-water corals is {theta_wwc:.3f}(±{theta_wwc_err:.3f})')
-
-# # merge the two dataframes with df on SampleName
-# df = pd.merge(df, df_cwc, on="SampleName", how="left")
-# df = pd.merge(df, df_wwc, on="SampleName", how="left")
-# df['theta'] = df['theta_x'].combine_first(df['theta_y'])
-# df['theta_err'] = df['theta_err_x'].combine_first(df['theta_err_y'])
-# df = df.drop(columns=['theta_x', 'theta_y', 'theta_err_x', 'theta_err_y'])
-# theta_coral = np.mean(df["theta"])
-# theta_coral_err = np.std(df["theta"])
-# print(f'The mean effective theta for coral vital effects is {theta_coral:.3f}(±{theta_coral_err:.3f})')
-
-
-# Calculate the effective theta for coral vital effects
 df["theta_coral"] = calculate_theta(d18O_A=df["d18O_equilibrium"], Dp17O_A=df["Dp17O_equilibrium"],
                                  d18O_B=df["d18O_AC"], Dp17O_B=df["Dp17O_AC"])
 theta_coral = np.median(df["theta_coral"])
@@ -430,10 +330,6 @@ ax2.plot(isoDIC_wwc["d18_CO3"]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO
          c="darkred", ls="solid", zorder=3, lw=1)
 ax2.plot(isoDIC_cwc["d18_CO3"]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"]-isoDIC_cwc["D17_CO3"].iloc[0],
          c="darkblue", ls="solid", zorder=3, lw=1)
-# ax2.plot(isoDIC_wwc["d18_CO3"].iloc[wwc_target]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO3"].iloc[wwc_target]-isoDIC_wwc["D17_CO3"].iloc[0],
-#          c="darkred", marker="|", zorder=3)
-# ax2.plot(isoDIC_cwc["d18_CO3"].iloc[cwc_target]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"].iloc[cwc_target]-isoDIC_cwc["D17_CO3"].iloc[0],
-#          c="darkblue", marker="|", zorder=3)
 ax2.annotate("",
              (isoDIC_wwc["d18_CO3"].iloc[wwc_target]-isoDIC_wwc["d18_CO3"].iloc[0],
               isoDIC_wwc["D17_CO3"].iloc[wwc_target]-isoDIC_wwc["D17_CO3"].iloc[0]),

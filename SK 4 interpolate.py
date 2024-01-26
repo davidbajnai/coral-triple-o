@@ -212,6 +212,13 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     ax.errorbar(prime(d18O_seawater), Dp17O_seawater,
                     xerr=d18O_seawater_err, yerr=Dp17O_seawater_err,
                     fmt="none", color="k", zorder=-1)
+    ax.annotate("carbonate equilibrium", xycoords="data", textcoords="data",
+            xy = (prime(df_eq["d18O"]).iloc[-1], df_eq["Dp17O"].iloc[-1]),
+            xytext = (prime(df_eq["d18O"]).iloc[-1], df_eq["Dp17O"].iloc[-1]+20),
+            ha="left", va="center",
+            arrowprops=dict(arrowstyle="->", color="k"))
+    ax.text(d18O_seawater-1, Dp17O_seawater-10, "ambient\nseawater", ha="left", va="top")
+    ax.text(d18O_coral-2, Dp17O_coral, "coral", ha="right", va="center")
     
     # Get the vital effect line
     df_line = vital_vector(d18O_coral, Dp17O_coral, len(df_eq["d18O"]), shift_d18O, theta_coral)
@@ -237,7 +244,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
     closest_point_eq = df_eq_f.iloc[min_indices[0]]
     T_max = df_eq.iloc[min_indices[0]]["temperature"]
-    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"red", ls=":")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"red", ls="-")
     ax.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="red")
 
 
@@ -250,7 +257,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
     closest_point_eq = df_eq_f.iloc[min_indices[0]]
     T_min = df_eq.iloc[min_indices[0]]["temperature"]
-    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"blue", ls=":")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"],"blue", ls="-")
     ax.scatter(prime(closest_point_eq.iloc[0]), closest_point_eq.iloc[1], marker=".", fc="blue")
 
     return temp, (T_max-T_min)/2
@@ -295,7 +302,7 @@ df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       Dp17O_seawater_err=row["Dp17Osw_err"],
                                                       theta_coral=theta_coral,
                                                       ax=ax),
-                                                    #   theta_coral=row["theta_coral"]),
+                                                    #   theta_coral=row["theta_coral"]), # uncomment this line to use the individual theta values
                              axis=1)
 
 df['T_17O'], df['T_17O_error'] = zip(*df['T_17O_tuple'])
@@ -305,7 +312,7 @@ df["T_18O"], df["T_18O_error"] = get_18O_temp(df["d18O_AC"], df["d18O_error"],
 print(f'The mean error of the 17O-based temperatures is: {df["T_17O_error"].mean():.1f} °C')
 print(f'The mean error of the 18O-based temperatures is: {df["T_18O_error"].mean():.1f} °C')
 
-# Print  the temperature differnce - not used in the paper
+# Print  the temperature difference - not used in the paper
 # print("\nThe average difference between the 17O-based and the MODELED temperatures:")
 # print(f'{df[(df["Type"] == "cold-water coral")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral")]["T_modeled"].mean():.1f} °C (COLD-WATER CORALS)')
 # print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.1f} °C (WARM-WATER CORALS)')
