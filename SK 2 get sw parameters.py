@@ -3,7 +3,7 @@
 # and then assigns a seawater T and d18O value to each site based on the gridded model of Breitkreuz et al. (2018)
 
 # INPUT: SK Table S-1.csv, SK Table S-3 part-1.csv, D18O_Breitkreuz_et_al_2018.nc
-# OUTPUT: SK Figure S3.png, SK Table S-3 part-2.csv
+# OUTPUT: SK Figure S1.png, SK Table S-3 part-2.csv
 
 # >>>>>>>>>
 
@@ -26,7 +26,15 @@ plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
 
-d18Osw_model_sigma = 0.1
+
+# Function to format the text for the SI table
+def format_text(row, value, error):
+    val = row[value]
+    err = row[error]
+    formatted_text = f"{val:.2f}(±{err:.2f})"
+    return formatted_text
+
+d18Osw_model_sigma = 0.2
 Tsw_model_sigma = 1.0
 
 # This file is not included in the repository due to its size
@@ -56,17 +64,21 @@ gx = cos(glon * pi / 180) * cos(glat * pi / 180)
 gy = sin(glon * pi / 180) * cos(glat * pi / 180)
 gz = sin(glat * pi / 180)
 
-with open(sys.path[0] + "/SK Table S-1.csv") as f:
+with open(sys.path[0] + "/SK Table S-1 part-1.csv") as f:
 	Samples = [{k: r[k] for k in r} for r in DictReader(f)]
 	print(Samples[0].keys())
 for r in Samples:
 	for k in r:
-		if k not in ["SampleName", "Type", "Species", "T_measured", "d13CDIC", "d18Osw_measured"]:
+		if k not in ["SampleName", "Type", "Species", "T_measured", "d18Osw_measured"]:
 			r[k] = float(r[k])
 
 print('Extracting seawater d18O for corals...')
 
-df_model = pd.DataFrame(columns=['SampleName', 'T_modeled', 'T_modeled_err', 'd18Osw_modeled', 'd18Osw_modeled_err'])
+# A dataframe to store the modelled values
+df_model = pd.DataFrame(columns=['SampleName', 'T_database', 'T_database_err', 'd18Osw_database', 'd18Osw_database_err'])
+
+# A separate dataframe to store the error of the interpolation (propagated onto the base model error)
+df_err = pd.DataFrame(columns=['err_T', 'err_d18Osw'])
 
 for s in Samples:
 	Sample, lon, lat, depth = s['SampleName'], s['Long'], s['Lat'], s['Depth']
@@ -136,30 +148,54 @@ for s in Samples:
 
 	xlabel('Temperature ($^{\circ}$C)')
 
-	new_data = {'SampleName': Sample, 'T_modeled': t, 'T_modeled_err': st, 'd18Osw_modeled': d18, 'd18Osw_modeled_err': sd18}
-	df_model = df_model._append(new_data, ignore_index=True)
+	new_data = {'SampleName': Sample, 'T_database': t, 'T_database_err': st, 'd18Osw_database': d18, 'd18Osw_database_err': sd18}
+	new_df = pd.DataFrame(new_data, index=[0])
+	df_model = pd.concat([df_model, new_df], ignore_index=True)
+
+	# Save the error of the interpolation
+	df_err = pd.concat([df_err, pd.DataFrame({'err_T': [Tvalues.std(ddof = 1)], 'err_d18Osw': [d18values.std(ddof = 1)]})], ignore_index=True)
 
 	# Save figures
 	# savefig(sys.path[0] + "/isoForam models/" + f'{Sample} model.png', dpi=150)
 
 	close(fig)
 
+print(f'\nMean errors of the interpolation are {df_err["err_T"].mean():.0f} °C, {df_err["err_d18Osw"].mean():.2f}‰')
 
+
+# Import the data
 df_measurements = pd.read_csv(sys.path[0] + "/SK Table S-3 part-1.csv")
-df_Info = pd.read_csv(sys.path[0] + "/SK Table S-1.csv")[
-    ["SampleName", "Species", "Type", "T_measured", "d18Osw_measured"]]
 
+# Merge the dataframes
+df_Info = pd.read_csv(sys.path[0] + "/SK Table S-1 part-1.csv")
 df = df_measurements.merge(
 	df_Info, on='SampleName').merge(df_model, on='SampleName')
 
+# Create Table S-1 for the SI
+df1 = df[["SampleName", "Type", "Species", "Lat", "Long", "Depth",
+          "T_measured", "d18Osw_measured"]].copy()
+df1.loc[:, "T_database"] = df.apply(lambda row: format_text(row, 'T_database', 'T_database_err'), axis=1)
+df1.loc[:, "d18Osw_database"] = df.apply(lambda row: format_text(row, 'd18Osw_database', 'd18Osw_database'), axis=1)
+df1.to_excel(sys.path[0] + "/SK Table S-1.xlsx", index=False)
+
+# Set Dp17Osw and Dp17Osw_err
+df["Dp17Osw"], df["Dp17Osw_err"] = -11, 6
+
 # Save data to CSV
+# drop columns that are not needed
 df.to_csv(sys.path[0] + "/SK Table S-3 part-2.csv", index=False)
 
 # Mean temperature of the warm-water corals
-print("Mean temperature of the warm-water corals: " +
-	  f'{df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.0f} °C')
-print("\nMean temperature of the cold-water corals: " +
-	  f'{df[df["Type"] == "cold-water coral"]["T_modeled"].mean():.0f} °C')
+print("\nMean temperature of the warm-water corals: " +
+	  f'{df[df["Type"] == "warm-water coral"]["T_database"].mean():.0f} °C')
+print("Mean temperature of the cold-water corals: " +
+	  f'{df[df["Type"] == "cold-water coral"]["T_database"].mean():.0f} °C')
+
+# temperature and d18Osw error
+print("\nMean temperature error: " +
+	  f'{df["T_database_err"].mean():.0f} °C')
+print("Mean d18Osw error: " +
+	  f'{df["d18Osw_database_err"].mean():.1f} ‰')
 
 # Create Figure S3
 
@@ -175,15 +211,18 @@ colors = dict(zip(categories, plt.cm.tab20(
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
 for cat in categories:
-    data = df[df["SampleName"] == cat]
-    ax1.scatter(data['d18Osw_measured'], data['d18Osw_modeled'],
-                marker=markers[cat], fc=colors[cat], label=cat)
+	data = df[df["SampleName"] == cat]
+	ax1.scatter(data['d18Osw_measured'], data['d18Osw_database'],
+				marker=markers[cat], fc=colors[cat], label=cat)
+	ax1.errorbar(data['d18Osw_measured'], data['d18Osw_database'],
+				 yerr=data['d18Osw_database_err'],
+				 fmt='none', ecolor="k", zorder=-1)
 
-# Calculate and annotate difference between measured and modeled d18Osw
-D18Osw = df['d18Osw_measured']-df['d18Osw_modeled']
-for i, difference in enumerate(D18Osw):
-    ax1.annotate(f"{difference:.1f}", (df['d18Osw_measured'][i]-0.05, df['d18Osw_modeled'][i]),
-                 ha='right', va='center')
+# Calculate and annotate difference between measured and database d18Osw
+Dd18Osw = df['d18Osw_measured'] - df['d18Osw_database']
+for i, difference in enumerate(Dd18Osw):
+	ax1.annotate(f"{difference:.1f}", (df['d18Osw_measured'][i] - 0.05, df['d18Osw_database'][i]),
+				 ha='right', va='center')
 
 # 1:1 line
 ax1.plot([0, 1.75], [0, 1.75], c = "k", ls="dashed", zorder = -1)
@@ -196,20 +235,23 @@ ax1.text(0.02, 0.98, "a", size=14, ha="left", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
 ax1.set_xlabel('Measured $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
-ax1.set_ylabel('Modelled $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
+ax1.set_ylabel('Database $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
 
 
-# Subplot B: Difference between measured and modeled temperature
+# Subplot B: Difference between measured and database temperature
 
 for cat in categories:
-    data = df[df["SampleName"] == cat]
-    ax2.scatter(data['T_measured'], data['T_modeled'],
-                marker=markers[cat], fc=colors[cat], label=cat)
+	data = df[df["SampleName"] == cat]
+	ax2.scatter(data['T_measured'], data['T_database'],
+				marker=markers[cat], fc=colors[cat], label=cat)
+	ax2.errorbar(data['T_measured'], data['T_database'],
+				 yerr=data['T_database_err'],
+				 fmt='none', ecolor="k", zorder = -1)
 
-# Calculate and annotate difference between measured and modeled temperature
-DT = df['T_measured']-df['T_modeled']
+# Calculate and annotate difference between measured and database temperature
+DT = df['T_measured']-df['T_database']
 for i, difference in enumerate(DT):
-    ax2.annotate(f"{difference:.1f}", (df['T_measured'][i]-1, df['T_modeled'][i]),
+    ax2.annotate(f"{difference:.1f}", (df['T_measured'][i]-1, df['T_database'][i]),
                  ha='right', va='center')
 
 # 1:1 line
@@ -223,9 +265,14 @@ plt.text(0.02, 0.98, "b", size=14, ha="left", va="top",
          transform=ax2.transAxes, fontweight="bold")
 
 ax2.set_xlabel('Measured temperature (°C)')
-ax2.set_ylabel('Modelled temperature (°C)')
+ax2.set_ylabel('Database temperature (°C)')
 
 ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
 
-plt.savefig(sys.path[0] + "/SK Figure S3.png")
+plt.savefig(sys.path[0] + "/SK Figure S1.png")
 plt.close("all")
+
+# print the largers  between measured and modelled d18Osw
+print("\nThe difference beween measured and database estimates: ")
+print(f"Temperature: {np.mean(abs(DT)):.0f} °C, max {np.max(abs(DT)):.0f} °C")
+print(f"d18Osw: {np.mean(abs(Dd18Osw)):.1f}‰, max {np.max(abs(Dd18Osw)):.1f}‰")

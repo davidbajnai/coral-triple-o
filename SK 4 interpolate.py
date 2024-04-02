@@ -1,5 +1,5 @@
 # INPUT: SK Table S-3 part-3.csv
-# OUTPUT: SK Figure 3.png, SK Figure S6.png, SK Table S-3.csv, SK Table S-3.xlsx
+# OUTPUT: SK Figure 3.png, SK Table S-3.csv, SK Table S-3.xlsx, SK Table S-3 short.xlsx
 
 # >>>>>>>>>
 
@@ -32,35 +32,38 @@ def unprime(x):
 
 def a18_cc(T):
 
-    # Used for Figure 2:                                   Hayles et al. (2018) - calcite
-    B_calcite = 7.027321E+14 / T**7 + -1.633009E+13 / T**6 + 1.463936E+11 / T**5 + -5.417531E+08 / T**4 + -4.495755E+05 / T**3  + 1.307870E+04 / T**2 + -5.393675E-01 / T + 1.331245E-04
-    B_water = -6.705843E+15 / T**7 + 1.333519E+14 / T**6 + -1.114055E+12 / T**5 + 5.090782E+09 / T**4 + -1.353889E+07 / T**3 + 2.143196E+04 / T**2 + 5.689300 / T + -7.839005E-03
-    return np.exp(B_calcite) / np.exp(B_water)
+    # Used for the discussion
+    return 0.0201 * (1000 / T) + 0.9642                     # Guo and Zhou (2019) – aragonite
 
-    # Use this for Figure S5
-    # return np.exp((2.84 * 10**6 / T**2 - 2.96) / 1000) # Wostbrock et al. (2020) – calcite
+    # Alternative equations: 
+
+    # Hayles et al. (2018) - calcite
+    # B_calcite = 7.027321E+14 / T**7 + -1.633009E+13 / T**6 + 1.463936E+11 / T**5 + -5.417531E+08 / T**4 + -4.495755E+05 / T**3  + 1.307870E+04 / T**2 + -5.393675E-01 / T + 1.331245E-04
+    # B_water = -6.705843E+15 / T**7 + 1.333519E+14 / T**6 + -1.114055E+12 / T**5 + 5.090782E+09 / T**4 + -1.353889E+07 / T**3 + 2.143196E+04 / T**2 + 5.689300 / T + -7.839005E-03
+    # return np.exp(B_calcite) / np.exp(B_water)
     
-    # Alternative equations
-    # return np.exp((17.88 * 1000 / T - 31.14) / 1000)   # Kim et al. (2007) – aragonite
-    # return np.exp((17.57 * 1000 / T - 29.13) / 1000)   # Daeron et al. (2019) – calcite
-    # return 0.0201 * (1000 / T) + 0.9642                # Guo and Zhou (2019) – aragonite
+    # return np.exp((2.84 * 10**6 / T**2 - 2.96) / 1000)    # Wostbrock et al. (2020) – calcite
+    # return np.exp((17.88 * 1000 / T - 31.14) / 1000)      # Kim et al. (2007) – aragonite
+    # return np.exp((17.57 * 1000 / T - 29.13) / 1000)      # Daeron et al. (2019) – calcite
 
 
 def theta_cc(T):
-    # Used for Figure 2:                         Hayles et al. (2018) - calcite
-    K_calcite = 1.019124E+09 / T**5 + -2.117501E+07 / T**4 + 1.686453E+05 / T**3 + -5.784679E+02 / T**2 + 1.489666E-01 / T + 0.5304852
-    B_calcite = 7.027321E+14 / T**7 + -1.633009E+13 / T**6 + 1.463936E+11 / T**5 + -5.417531E+08 / T**4 + -4.495755E+05 / T**3  + 1.307870E+04 / T**2 + -5.393675E-01 / T + 1.331245E-04
-    K_water = 7.625734E+06 / T**5 + 1.216102E+06 / T**4 + -2.135774E+04 / T**3 + 1.323782E+02 / T**2 + -4.931630E-01 / T + 0.5306551
-    B_water = -6.705843E+15 / T**7 + 1.333519E+14 / T**6 + -1.114055E+12 / T**5 + 5.090782E+09 / T**4 + -1.353889E+07 / T**3 + 2.143196E+04 / T**2 + 5.689300 / T + -7.839005E-03
-    a18 = np.exp(B_calcite) / np.exp(B_water)
-    return K_calcite + (K_calcite-K_water) * (B_water / np.log(a18))
 
-    # Use this for Figure S5
-    # return -1.39 / T + 0.5305                 # Wostbrock et al. (2020) – calcite
+    # Used for the discussion
+    return 59.1047/T**2 + -1.4089/T + 0.5297                # Guo and Zhou (2019) – aragonite
 
-    # Alternative equations
-    # return 59.1047/T**2 + -1.4089/T + 0.5297  # Guo and Zhou (2019) – aragonite
-    # return -1.53 / T + 0.5305                 # Wostbrock et al. (2020) – aragonite
+    # Alternative equations:
+
+    # Hayles et al. (2018) - calcite
+    # K_calcite = 1.019124E+09 / T**5 + -2.117501E+07 / T**4 + 1.686453E+05 / T**3 + -5.784679E+02 / T**2 + 1.489666E-01 / T + 0.5304852
+    # B_calcite = 7.027321E+14 / T**7 + -1.633009E+13 / T**6 + 1.463936E+11 / T**5 + -5.417531E+08 / T**4 + -4.495755E+05 / T**3  + 1.307870E+04 / T**2 + -5.393675E-01 / T + 1.331245E-04
+    # K_water = 7.625734E+06 / T**5 + 1.216102E+06 / T**4 + -2.135774E+04 / T**3 + 1.323782E+02 / T**2 + -4.931630E-01 / T + 0.5306551
+    # B_water = -6.705843E+15 / T**7 + 1.333519E+14 / T**6 + -1.114055E+12 / T**5 + 5.090782E+09 / T**4 + -1.353889E+07 / T**3 + 2.143196E+04 / T**2 + 5.689300 / T + -7.839005E-03
+    # a18 = np.exp(B_calcite) / np.exp(B_water)
+    # return K_calcite + (K_calcite-K_water) * (B_water / np.log(a18))
+
+    # return -1.39 / T + 0.5305                             # Wostbrock et al. (2020) – calcite
+    # return -1.53 / T + 0.5305                             # Wostbrock et al. (2020) – aragonite
 
 
 def a17_cc(T):
@@ -276,50 +279,47 @@ colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 # Do the sensitivity analysis here (uncomment lines to test different scenarios)
 # -> What happens if we change the measurement error
 # Dp17O_error = df["Dp17O_error"].mean()
-# df["Dp17O_error"] = Dp17O_error - 1
-# print("The mean cooral Dp17Oc error is: " + str(round(df["Dp17O_error"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17O_error'].mean() - Dp17O_error, 0)}")
-# -> What happens if we change the seawater Dp17O error
-# Dp17O_error = df["Dp17Osw_err"].mean()
-# df["Dp17Osw_err"] = 0
-# print("The mean seawater Dp17O error is: " + str(round(df["Dp17Osw_err"].mean(),0)) + " ppm; " + f"∆error = {round(df['Dp17Osw_err'].mean() - Dp17O_error, 0)}")
+# df["Dp17O_error"] = Dp17O_error - 3
+# print(f"The mean coral Dp17Oc error is: {df['Dp17O_error'].mean():.0f} ppm; ∆error = {(df['Dp17O_error'].mean() - Dp17O_error):.0f} ppm\n")
 
-# Figure S6 - to check if the interpolation works
+# -> What happens if we change the seawater Dp17O error
+Dp17O_error = df["Dp17Osw_err"].mean()
+df["Dp17Osw_err"] = 0
+print(f"\nUsing a mean seawater Dp17O error of {df['Dp17Osw_err'].mean():.0f} ppm\n")
+
 
 # Uncomment this line to produce Figure S6
-# df = df[df["SampleName"] == "SK-GeoB"]
+# df = df[df["SampleName"] == "SK-SA5"]
 
 fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
 # Get the "vital effect"-corrected temperatures
-theta_coral = df["theta_coral"].median()
+theta_coral = round(df["theta_coral"].mean(), 3)
 df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       Dp17O_coral=row["Dp17O_AC"],
                                                       d18O_coral_error=row["d18O_error"],
                                                       Dp17O_coral_error=row["Dp17O_error"],
-                                                      d18O_seawater=row["d18Osw_modeled"],
-                                                      d18O_seawater_err=row["d18Osw_modeled_err"],
+                                                      d18O_seawater=row["d18Osw_database"],
+                                                      d18O_seawater_err=row["d18Osw_database_err"],
                                                       Dp17O_seawater=row["Dp17Osw"],
                                                       Dp17O_seawater_err=row["Dp17Osw_err"],
                                                       theta_coral=theta_coral,
+                                                    #   theta_coral=row["theta_coral"], # uncomment this line to use the individual theta values
                                                       ax=ax),
-                                                    #   theta_coral=row["theta_coral"]), # uncomment this line to use the individual theta values
                              axis=1)
 
 df['T_17O'], df['T_17O_error'] = zip(*df['T_17O_tuple'])
 del df['T_17O_tuple']
 df["T_18O"], df["T_18O_error"] = get_18O_temp(df["d18O_AC"], df["d18O_error"],
-                                              df["d18Osw_modeled"], df["d18Osw_modeled_err"])
-print(f'The mean error of the 17O-based temperatures is: {df["T_17O_error"].mean():.1f} °C')
-print(f'The mean error of the 18O-based temperatures is: {df["T_18O_error"].mean():.1f} °C')
+                                              df["d18Osw_database"], df["d18Osw_database_err"])
+print(f'The mean error of the 17O-based temperatures is: {df["T_17O_error"].mean():.0f} °C')
+print(f'The mean error of the 18O-based temperatures is: {df["T_18O_error"].mean():.0f} °C')
 
-# Print  the temperature difference - not used in the paper
-# print("\nThe average difference between the 17O-based and the MODELED temperatures:")
-# print(f'{df[(df["Type"] == "cold-water coral")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral")]["T_modeled"].mean():.1f} °C (COLD-WATER CORALS)')
-# print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_modeled"].mean():.1f} °C (WARM-WATER CORALS)')
-
-# print("\nThe average difference between the 17O-based and the MEASURED temperatures: ")
-# print(f'{df[(df["Type"] == "cold-water coral")]["T_17O"].mean() - df[(df["Type"] == "cold-water coral")]["T_measured"].mean():.1f} °C (COLD-WATER CORALS)')
-# print(f'{df[df["Type"] == "warm-water coral"]["T_17O"].mean() - df[df["Type"] == "warm-water coral"]["T_measured"].mean():.1f} °C (WARM-WATER CORALS)')
+# Print the temperature difference
+print("\nThe average difference between the 17O-based and the DATABASE temperatures:")
+print(f'{np.mean(df["T_17O"] - df["T_database"]):.0f} °C (ALL CORALS)')
+print(f'{np.mean(df[(df["Type"] == "cold-water coral")]["T_17O"] - df[(df["Type"] == "cold-water coral")]["T_database"]):.0f} °C (COLD-WATER CORALS)')
+print(f'{np.mean(df[df["Type"] == "warm-water coral"]["T_17O"] - df[df["Type"] == "warm-water coral"]["T_database"]):.0f} °C (WARM-WATER CORALS)')
 
 # Create a separate scatter plot for each species
 ax.scatter(prime(df["d18O_AC"]), df["Dp17O_AC"],
@@ -345,9 +345,9 @@ for cat in cat1:
     for dog in cat2:
         data = df[(df["Species"] == cat) & (df["Type"] == dog)]
         if len(data) > 0:
-            x = data["T_modeled"]
+            x = data["T_database"]
             y = data["T_18O"]
-            xerr = data["T_modeled_err"]
+            xerr = data["T_database_err"]
             yerr = data["T_18O_error"]
             ax1.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=f"{cat}")
@@ -379,9 +379,9 @@ for cat in cat1:
     for dog in cat2:
         data = df[(df["Species"] == cat) & (df["Type"] == dog)]
         if len(data) > 0:
-            x = data["T_modeled"]
+            x = data["T_database"]
             y = data["T_17O"]
-            xerr = data["T_modeled_err"]
+            xerr = data["T_database_err"]
             yerr = data["T_17O_error"]
             ax2.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=f"{cat}")
@@ -412,3 +412,8 @@ plt.close("all")
 
 df.to_csv(sys.path[0] + "/SK Table S-3.csv", index=False)
 df.to_excel(sys.path[0] + "/SK Table S-3.xlsx", index=False)
+
+# Create an abbreviated version of Table S-3 for the SI
+df = df[["SampleName", "Type", "Species", "d18O_AC", "d18O_error",
+         "Dp17O_AC", "Dp17O_error", "Replicates", "theta_coral"]]
+df.to_excel(sys.path[0] + "/SK Table S-3 short.xlsx", index=False)
