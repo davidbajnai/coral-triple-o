@@ -299,7 +299,7 @@ mean_Dp17O = df[df["Type"] == "warm-water coral"]["Dp17O_AC"].mean()
 df_eq_d18O = df_eq.iloc[(df_eq["d18O"]-mean_d18O).abs().argsort()[:1]]
 ax.scatter(prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1],
            marker=".", fc="#4F4B41", ec="k", zorder=10)
-ax.annotate(r"$\it{T}$ from $\delta^{18}O$" + "\n(" + str(round(df_eq_d18O.iloc[0, 2])) + " °C)",
+ax.annotate("apparent $\it{T}$\nfrom $\delta^{18}O$\n(" + f"{df_eq_d18O.iloc[0, 2]:.0f} °C)",
             (prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1]),
             (prime(df_eq_d18O.iloc[0, 0]+0.3), df_eq_d18O.iloc[0, 1]+20),
             ha = "left", va = "bottom",

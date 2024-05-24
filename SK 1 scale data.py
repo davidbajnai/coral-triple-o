@@ -60,8 +60,8 @@ def applyAFF(d18O_CO2, d17O_CO2, mineral):
         alpha = 1.01063
     
     elif mineral == "dolomite":
-        alpha = np.exp(11.03/1000) # Sharma and Clayton (1965)
-        # alpha = np.mean([1.01178, 1.01186]) # Rosenbaum and Sheppard (1986)
+        # alpha = np.exp(11.03/1000) # Sharma and Clayton (1965)
+        alpha = np.mean([1.01178, 1.01186]) # Rosenbaum and Sheppard (1986)
 
     d18O_AC = (d18O_CO2 + 1000) / alpha - 1000
     d17O_AC = (d17O_CO2 + 1000) / (alpha ** 0.523) - 1000
@@ -82,7 +82,7 @@ def scaleData(df, project):
     if grouped.ngroups == 1:
         SuppFig = [""]
     else:
-        SuppFig = ["A","B","C","D"]
+        SuppFig = ["a","b","c","d"]
     FigNum = 0
     for period, group in grouped:
 
@@ -201,8 +201,8 @@ df_avg[["d18O_AC", "d17O_AC", "Dp17O_AC"]] = df_avg.apply(lambda x: applyAFF(x["
 
 # Export CSV
 df_avg.to_csv(sys.path[0] + "/SK Table S-3 part-1.csv", index=False)
-print("\nAll sample replicates averaged:")
-print(df_avg.round({"Dp17O_CO2": 0, "Dp17O_error": 0, "Dp17O_AC": 0}).round(3))
+# print("\nAll sample replicates averaged:")
+# print(df_avg.round({"Dp17O_CO2": 0, "Dp17O_error": 0, "Dp17O_AC": 0}).round(3))
 
 # Create Figure S2
 fig, (ax1, ax2) = plt.subplots(1, 2)
