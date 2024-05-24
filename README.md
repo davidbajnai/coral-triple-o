@@ -1,4 +1,5 @@
 # Supplementary material for:</br>Correcting for vital effects in coral carbonate using triple oxygen isotopes
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11277154.svg)](https://doi.org/10.5281/zenodo.11277154)
 
 ## Graphical abstract
 ![Graphical Abstract](./SK%20Graphical%20Abstract.png)
