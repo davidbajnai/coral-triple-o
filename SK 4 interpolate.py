@@ -10,6 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 
+# Import functions
+from functions import *
+
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
 plt.rcParams.update({'font.size': 7})
@@ -22,14 +25,6 @@ plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
 
 # Functions that make life easier
-def prime(x):
-    return 1000 * np.log(x / 1000 + 1)
-
-
-def unprime(x):
-    return (np.exp(x / 1000) - 1) * 1000
-
-
 def a18_cc(T):
 
     # Used for the discussion
@@ -89,33 +84,6 @@ def get_18O_temp(d18O_coral, d18O_coral_err, d18O_seawater, d18O_seawater_err):
 
 def d17O_cc(equilibrium_temperatures, d17Ow):
     return a17_cc(equilibrium_temperatures + 273.15) * (d17Ow+1000) - 1000
-
-
-def Dp17O(d17O, d18O):
-    return (prime(d17O) - 0.528 * prime(d18O)) * 1000
-
-
-def d17O(d18O, Dp17O):
-    return unprime(Dp17O / 1000 + 0.528 * prime(d18O))
-
-
-def calculate_theta(d18O_A, Dp17O_A, d18O_B, Dp17O_B):
-    a18 = (d18O_B + 1000) / (d18O_A + 1000)
-    a17 = (d17O(d18O_B, Dp17O_B) + 1000) / (d17O(d18O_A, Dp17O_A) + 1000)
-    return np.log(a17) / np.log(a18)
-
-
-def apply_theta(d18O_A, Dp17O_A, d18O_B=None, shift_d18O=None, theta=None):
-    if d18O_B == None:
-        d18O_B = d18O_A + shift_d18O
-
-    a18 = (d18O_B + 1000) / (d18O_A + 1000)
-    a17 = a18**theta
-
-    d17O_B = a17 * (d17O(d18O_A, Dp17O_A) + 1000) - 1000
-    Dp17O_B = Dp17O(d17O_B, d18O_B)
-
-    return Dp17O_B
 
 
 def cc_equilibrium(T, T_err, d18Ow, d18Ow_err, Dp17Ow, Dp17Ow_err, Sample=None):

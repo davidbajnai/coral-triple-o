@@ -12,6 +12,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Import functions
+from functions import *
+
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
 plt.rcParams.update({'font.size': 7})
@@ -25,19 +28,6 @@ plt.rcParams["savefig.bbox"] = "tight"
 
 
 # Functions that make life easier
-def prime(delta):
-    return 1000 * np.log(delta/1000 + 1)
-
-
-def unprime(dprime):
-    return (np.exp(dprime/1000) - 1) * 1000
-
-
-# This function calculates the ∆'17O value (in ppm) from the d17O and d18O values
-def Dp17O(d17O, d18O):
-    return (prime(d17O) - 0.528 * prime(d18O)) * 1000
-
-
 def print_info(df, d18O_col, Dp17O_col, sample_name):
     gas_subset = df[df["SampleName"].str.contains(sample_name)].copy()
     d18O_mean = gas_subset[d18O_col].mean()
@@ -199,8 +189,7 @@ df_avg = average_data(df)
 # Apply acid fractionation factor
 df_avg[["d18O_AC", "d17O_AC", "Dp17O_AC"]] = df_avg.apply(lambda x: applyAFF(x["d18O_CO2"], x["d17O_CO2"], "aragonite"), axis=1, result_type="expand")
 
-# Export CSV
-df_avg.to_csv(sys.path[0] + "/SK Table S-3 part-1.csv", index=False)
+# Print the average values
 # print("\nAll sample replicates averaged:")
 # print(df_avg.round({"Dp17O_CO2": 0, "Dp17O_error": 0, "Dp17O_AC": 0}).round(3))
 
@@ -263,3 +252,31 @@ plt.close("all")
 print(f"\nAverage error for Dp17O: {df_avg['Dp17O_error'].mean():.0f} ppm")
 print(f"Average error for d18O: {df_avg['d18O_error'].mean():.1f} ppm")
 
+
+# Add the coral datapoint from Passey et al. (2014) to the dataset
+# Have to convert the CO2 value in Table 3 to carbonate value
+d18O_CO2_Passey = unprime(35.902)
+Dp17O_CO2_Passey = -129
+d17O_CO2_Passey = d17O(d18O_CO2_Passey, Dp17O_CO2_Passey)
+alpha = 1.008541 # aragonite at 90°C
+d18O_AC_Passey = (d18O_CO2_Passey + 1000) / alpha - 1000
+d17O_AC_Passey = (d17O_CO2_Passey + 1000) / (alpha ** 0.523) - 1000
+Dp17O_AC_Passey = Dp17O(d17O_AC_Passey, d18O_AC_Passey)
+
+Passey_data = {"SampleName": "JBC03",
+               "d18O_CO2": d18O_CO2_Passey,
+               "d17O_CO2": d17O_CO2_Passey,
+               "Dp17O_CO2": Dp17O_CO2_Passey,
+               "d18O_error": 0.6,
+               "d17O_error": np.nan,
+               "Dp17O_error": 13,
+               "Replicates": 3,
+               "d18O_AC": d18O_AC_Passey,
+               "d17O_AC": d17O_AC_Passey,
+               "Dp17O_AC": Dp17O_AC_Passey,
+               }
+Passey_data_df = pd.DataFrame([Passey_data])
+df_avg = pd.concat([df_avg, Passey_data_df], ignore_index=True)
+
+# Export CSV
+df_avg.to_csv(sys.path[0] + "/SK Table S-3 part-1.csv", index=False)

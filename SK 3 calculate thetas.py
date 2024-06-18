@@ -13,6 +13,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
 
+# Import functions
+from functions import *
+
 
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
@@ -26,14 +29,6 @@ plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
 
 # Functions that make life easier
-def prime(x):
-    return 1000 * np.log(x / 1000 + 1)
-
-
-def unprime(x):
-    return (np.exp(x / 1000) - 1) * 1000
-
-
 def a18_cc(T):
 
     # Used for the discussion
@@ -49,6 +44,17 @@ def a18_cc(T):
     # return np.exp((2.84 * 10**6 / T**2 - 2.96) / 1000)    # Wostbrock et al. (2020) – calcite
     # return np.exp((17.88 * 1000 / T - 31.14) / 1000)      # Kim et al. (2007) – aragonite
     # return np.exp((17.57 * 1000 / T - 29.13) / 1000)      # Daeron et al. (2019) – calcite
+
+def a17_cc(T):
+    return a18_cc(T)**theta_cc(T)
+
+
+def d18O_cc(equilibrium_temperatures, d18Ow):
+    return a18_cc(equilibrium_temperatures + 273.15) * (d18Ow+1000) - 1000
+
+
+def d17O_cc(equilibrium_temperatures, d17Ow):
+    return a17_cc(equilibrium_temperatures + 273.15) * (d17Ow+1000) - 1000
 
 
 def theta_cc(T):
@@ -68,50 +74,6 @@ def theta_cc(T):
 
     # return -1.39 / T + 0.5305                             # Wostbrock et al. (2020) – calcite
     # return -1.53 / T + 0.5305                             # Wostbrock et al. (2020) – aragonite
-
-
-def a17_cc(T):
-    return a18_cc(T)**theta_cc(T)
-
-
-def d18O_cc(equilibrium_temperatures, d18Ow):
-    return a18_cc(equilibrium_temperatures + 273.15) * (d18Ow+1000) - 1000
-
-
-def d17O_cc(equilibrium_temperatures, d17Ow):
-    return a17_cc(equilibrium_temperatures + 273.15) * (d17Ow+1000) - 1000
-
-
-def Dp17O(d17O, d18O):
-    return (prime(d17O) - 0.528 * prime(d18O)) * 1000
-
-
-def d17O(d18O, Dp17O):
-    return unprime(Dp17O / 1000 + 0.528 * prime(d18O))
-
-
-def calculate_theta(d18O_A, Dp17O_A, d18O_B, Dp17O_B):
-    a18 = (d18O_B + 1000) / (d18O_A + 1000)
-    a17 = (d17O(d18O_B, Dp17O_B) + 1000) / (d17O(d18O_A, Dp17O_A) + 1000)
-
-    theta = round(np.log(a17) / np.log(a18), 4)
-
-    return theta
-
-
-def apply_theta(d18O_A, Dp17O_A, d18O_B=None, shift_d18O=None, theta=None):
-
-    if d18O_B == None:
-        d18O_B = d18O_A + shift_d18O
-    d17O_A = d17O(d18O_A, Dp17O_A)
-
-    a18 = (d18O_B + 1000) / (d18O_A + 1000)
-    a17 = a18**theta
-
-    d17O_B = a17 * (d17O_A + 1000) - 1000
-    Dp17O_B = Dp17O(d17O_B, d18O_B)
-
-    return Dp17O_B
 
 
 def cc_equilibrium(T, T_err, d18Ow, d18Ow_err, Dp17Ow, Dp17Ow_err, Sample=None):
@@ -225,7 +187,7 @@ df["theta_coral"] = calculate_theta(d18O_A=df["d18O_equilibrium"], Dp17O_A=df["D
                                  d18O_B=df["d18O_AC"], Dp17O_B=df["Dp17O_AC"])
 theta_coral = round(df["theta_coral"].mean(), 3)
 theta_coral_std = np.std(df["theta_coral"])
-print(f'The median effective theta for coral vital effects is {theta_coral:.3f}(±{theta_coral_std:.3f})')
+print(f'The mean effective theta for coral vital effects is {theta_coral:.3f}(±{theta_coral_std:.3f})')
 print(f'The effective theta range is {np.min(df["theta_coral"]):.3f} to {np.max(df["theta_coral"]):.3f}')
 
 # Calculate the error of the effective theta for coral vital effects

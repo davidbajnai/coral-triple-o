@@ -15,6 +15,10 @@ import netCDF4 as nc
 from pylab import *
 import sys
 
+# Import functions
+from functions import *
+
+
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
 plt.rcParams.update({'font.size': 7})
