@@ -28,6 +28,7 @@ plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
 
+
 # Functions that make life easier
 def a18_cc(T):
 
@@ -164,14 +165,14 @@ def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fl
     return equilibrium_df
 
 
-# isoDIC models
+# Import data from CSV files
 isoDIC_header = pd.read_csv(sys.path[0] + "/isoDIC_header.csv", sep=",")
 isoDIC_cwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.8_T9.csv", sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
 isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.5_T27.csv", sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
-
 df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-2.csv", sep=",")
+
 
 # Calculate equilibrium values using the "measured + database" d18Osw and T values
 df_equi = cc_equilibrium(T=df["T_database"], T_err=df["T_database_err"],
@@ -191,7 +192,7 @@ print(f'The mean effective theta for coral vital effects is {theta_coral:.3f}(±
 print(f'The effective theta range is {np.min(df["theta_coral"]):.3f} to {np.max(df["theta_coral"]):.3f}')
 
 # Calculate the error of the effective theta for coral vital effects
-def monte_carlo_simulation_row(row, num_simulations=1000):
+def monte_carlo_simulation(row, num_simulations=1000):
     thetas = []
     for _ in range(num_simulations):
         d18O_A_error = np.random.normal(loc=0, scale=row["d18O_error"])
@@ -210,7 +211,7 @@ def monte_carlo_simulation_row(row, num_simulations=1000):
     
     return round(np.std(thetas), 3)
 
-df["theta_coral_error"] = df.apply(monte_carlo_simulation_row, axis=1)
+df["theta_coral_error"] = df.apply(monte_carlo_simulation, axis=1)
 print(f'The error of the individual coral vital effects theta is {df["theta_coral_error"].mean():.3f}')
 
 wwc_df = df[df["Type"] == "warm-water coral"]
@@ -441,11 +442,11 @@ diffusion_slope = (np.log((12+16+16)/(12+17+16)))/(np.log((12+16+16)/(12+18+16))
 for abs in abs_values:
     coral_slope_min = min(coral_slope_range)
     x = (1 - ((coral_slope_min - diffusion_slope) / (abs - diffusion_slope))) * 100
-    print(f"If the absorption slope is {abs} and the coral theta is {coral_slope_min},\nthen up to {x:.0f}% of the total ‘vital effect’ is induced by diffusion\n")
+    print(f"If the absorption slope is {abs} and the coral theta is {coral_slope_min}, then up to {x:.0f}% of the total vital effect is from diffusion")
 
 # Calculate diffusion-induced 'vital effect' percentage using the revised theta estimates from Bajnai et al. (2023)
 abs_values = [0.531, 0.532]
 for abs in abs_values:
     coral_slope_min = min(coral_slope_range)
     x = (1 - ((coral_slope_min - diffusion_slope) / (abs - diffusion_slope))) * 100
-    print(f"If the absorption slope is {abs} and the coral theta is {coral_slope_min},\nthen up to {x:.0f}% of the total ‘vital effect’ is induced by diffusion\n")
+    print(f"If the absorption slope is {abs} and the coral theta is {coral_slope_min}, then up to {x:.0f}% of the total vital effect is from diffusion")
