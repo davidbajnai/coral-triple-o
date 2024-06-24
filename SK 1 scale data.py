@@ -254,14 +254,20 @@ print(f"Average error for d18O: {df_avg['d18O_error'].mean():.1f} ppm")
 
 
 # Add the coral datapoint from Passey et al. (2014) to the dataset
-# Have to convert the CO2 value in Table 3 to carbonate value
+# Normalization between the Passey et al. (2014) and Wostbrock et al. (2020) reference frames
 d18O_CO2_Passey = unprime(35.902)
 Dp17O_CO2_Passey = -129
 d17O_CO2_Passey = d17O(d18O_CO2_Passey, Dp17O_CO2_Passey)
-alpha = 1.008541 # aragonite at 90°C
+alpha = 1/0.9919498 # empirical fractionation, from Huth et al. (2022)
 d18O_AC_Passey = (d18O_CO2_Passey + 1000) / alpha - 1000
-d17O_AC_Passey = (d17O_CO2_Passey + 1000) / (alpha ** 0.523) - 1000
+d17O_AC_Passey = (d17O_CO2_Passey + 1000) / (alpha ** 0.5234) - 1000
 Dp17O_AC_Passey = Dp17O(d17O_AC_Passey, d18O_AC_Passey)
+
+# Account for the difference in the acid fractionation factors
+# between calcite and aragonite, only for d18O
+
+d18O_AC_Passey += A_from_a(1.008541, d18O_CO2_Passey) - A_from_a(1.008146, d18O_CO2_Passey)
+d17O_AC_Passey = d17O(d18O_AC_Passey, Dp17O_AC_Passey)
 
 Passey_data = {"SampleName": "JBC03",
                "d18O_CO2": d18O_CO2_Passey,
