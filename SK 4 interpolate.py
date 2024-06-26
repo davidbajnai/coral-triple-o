@@ -247,7 +247,7 @@ colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
 # Do the sensitivity analysis here (uncomment lines to test different scenarios)
 # -> What happens if we change the measurement error
 # Dp17O_error = df["Dp17O_error"].mean()
-# df["Dp17O_error"] = Dp17O_error - 3
+# df["Dp17O_error"] = Dp17O_error-2
 # print(f"The mean coral Dp17Oc error is: {df['Dp17O_error'].mean():.0f} ppm; ∆error = {(df['Dp17O_error'].mean() - Dp17O_error):.0f} ppm\n")
 
 # -> What happens if we change the seawater Dp17O error
@@ -271,8 +271,7 @@ df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
                                                       d18O_seawater_err=row["d18Osw_database_err"],
                                                       Dp17O_seawater=row["Dp17Osw"],
                                                       Dp17O_seawater_err=row["Dp17Osw_err"],
-                                                      theta_coral=theta_coral,
-                                                    #   theta_coral=row["theta_coral"], # uncomment this line to use the individual theta values
+                                                      theta_coral=row["theta_coral_unique"],
                                                       ax=ax),
                              axis=1)
 
@@ -285,9 +284,14 @@ print(f'The mean error of the 18O-based temperatures is: {df["T_18O_error"].mean
 
 # Print the temperature difference
 print("\nThe average difference between the 17O-based and the DATABASE temperatures:")
-print(f'{np.mean(df["T_17O"] - df["T_database"]):.0f} °C (ALL CORALS)')
-print(f'{np.mean(df[(df["Type"] == "cold-water coral")]["T_17O"] - df[(df["Type"] == "cold-water coral")]["T_database"]):.0f} °C (COLD-WATER CORALS)')
-print(f'{np.mean(df[df["Type"] == "warm-water coral"]["T_17O"] - df[df["Type"] == "warm-water coral"]["T_database"]):.0f} °C (WARM-WATER CORALS)')
+print(f'{np.mean(np.abs(df["T_17O"] - df["T_database"])):.0f} °C (ALL CORALS)')
+print(f'{np.mean(np.abs(df[(df["Type"] == "cold-water coral")]["T_17O"] - df[(df["Type"] == "cold-water coral")]["T_database"])):.0f} °C (COLD-WATER CORALS)')
+print(f'{np.mean(np.abs(df[df["Type"] == "warm-water coral"]["T_17O"] - df[df["Type"] == "warm-water coral"]["T_database"])):.0f} °C (WARM-WATER CORALS)')
+
+# print("\nThe average difference between the 18O-based and the DATABASE temperatures:")
+# print(f'{np.mean(np.abs(df["T_18O"] - df["T_database"])):.0f} °C (ALL CORALS)')
+# print(f'{np.mean(np.abs(df[(df["Type"] == "cold-water coral")]["T_18O"] - df[(df["Type"] == "cold-water coral")]["T_database"])):.0f} °C (COLD-WATER CORALS)')
+# print(f'{np.mean(np.abs(df[df["Type"] == "warm-water coral"]["T_18O"] - df[df["Type"] == "warm-water coral"]["T_database"])):.0f} °C (WARM-WATER CORALS)')
 
 # Create a separate scatter plot for each species
 ax.scatter(prime(df["d18O_AC"]), df["Dp17O_AC"],

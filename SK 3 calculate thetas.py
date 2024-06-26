@@ -176,16 +176,16 @@ df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-2.csv", sep=",")
 
 # Calculate equilibrium values using the "measured + database" d18Osw and T values
 df_equi = cc_equilibrium(T=df["T_database"], T_err=df["T_database_err"],
-                                d18Ow=df["d18Osw_database"], d18Ow_err=df["d18Osw_database_err"],
-                                Dp17Ow=df["Dp17Osw"], Dp17Ow_err=df["Dp17Osw_err"],
-                                Sample=df["SampleName"])
+                         d18Ow=df["d18Osw_database"], d18Ow_err=df["d18Osw_database_err"],
+                         Dp17Ow=df["Dp17Osw"], Dp17Ow_err=df["Dp17Osw_err"],
+                         Sample=df["SampleName"])
 df = pd.merge(df, df_equi, on="SampleName", how="left")
 df["d18O_offset"] = df["d18O_AC"]-df["d18O_equilibrium"]
 df["Dp17O_offset"] = df["Dp17O_AC"]-df["Dp17O_equilibrium"]
 
 # Calculate the effective theta for coral vital effects
 df["theta_coral"] = calculate_theta(d18O_A=df["d18O_equilibrium"], Dp17O_A=df["Dp17O_equilibrium"],
-                                 d18O_B=df["d18O_AC"], Dp17O_B=df["Dp17O_AC"])
+                                    d18O_B=df["d18O_AC"], Dp17O_B=df["Dp17O_AC"])
 theta_coral = round(df["theta_coral"].mean(), 3)
 theta_coral_std = np.std(df["theta_coral"])
 print(f'The mean effective theta for coral vital effects is {theta_coral:.3f}(±{theta_coral_std:.3f})')
@@ -224,13 +224,20 @@ theta_cwc = cwc_df["theta_coral"].mean()
 theta_cwc_err = cwc_df["theta_coral"].std()
 print(f'The mean effective theta for cold-water corals is {theta_cwc:.3f}(±{theta_cwc_err:.3f})')
 
+# Calculate the uniqe theta for each coral, excluding the one under analysis
+full_matrix = np.tile(df["theta_coral"], (len(df), 1))
+mask = np.eye(len(df), dtype=bool)
+masked_values = np.ma.masked_array(full_matrix, mask)
+means = masked_values.mean(axis=1)
+df["theta_coral_unique"] = np.round(means, 4)
+
+
 
 # Assign colors and markers
 cat1 = df["Species"].unique()
 markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
 cat2 = df["Type"].unique()
 colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
-
 
 
 # CREATE FIGURE S5
@@ -246,11 +253,11 @@ for cat in cat1:
             y = data["theta_coral"]
             yerr = data["theta_coral_error"]
             ax.scatter(x, y,
-                        marker=markers[cat], fc=colors[dog], label=f"{cat}", zorder=10)
+                       marker=markers[cat], fc=colors[dog], label=f"{cat}", zorder=10)
             ax.errorbar(x, y, yerr=yerr,
-                            fmt="none", color=colors[dog], zorder=0)
+                        fmt="none", color=colors[dog], zorder=0)
             for xi, yi in zip(x, y):
-                ax.text(xi, 0.5265, str(xi), ha="center", va="center", c = colors[dog], fontsize=5)
+                ax.text(xi, 0.5265, str(xi), ha="center", va="center", c=colors[dog], fontsize=5)
 
 f = 0.5
 ax.set_xlim(0-f, len(df["SampleName"])-1+f)
@@ -287,7 +294,7 @@ for cat in cat1:
             ax1.scatter(x, y,
                         marker=markers[cat], fc=colors[dog], label=f"{cat}")
             ax1.errorbar(x, y, xerr=xerr, yerr=yerr,
-                            fmt="none", color=colors[dog], zorder=0)
+                         fmt="none", color=colors[dog], zorder=0)
     
 # Plot quilibrium points
 ax1.scatter(prime(df["d18O_equilibrium"]), df["Dp17O_equilibrium"],
