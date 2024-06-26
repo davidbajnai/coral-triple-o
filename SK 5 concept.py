@@ -362,21 +362,21 @@ df_eq = plot_equilibrium(Dp17Ow=-11, d18Ow=1,
                          Tmin=10, Tmax=100,
                          ax=ax, color="w", highlight=False, mark_water=False)
 
-plt.text(df_eq["d18O"].iloc[-1], df_eq["Dp17O"].iloc[-1], "equilibrium\n(10–100 °C)", ha="right", va="center", c="w")
+plt.text(df_eq["d18O"].iloc[-1], df_eq["Dp17O"].iloc[-1],
+         "equilibrium\n(10–100 °C)", ha="right", va="center", c="w")
 
 # Vital effect arrow (plot already calculated values)
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-df["T_17O"].mean()).abs().argsort()[:1]]
 shift_d18O = -10
-A = (prime(df_eq_T.iloc[0, 0]),
-     df_eq_T.iloc[0, 1])
+A = (prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1])
 B = (prime(df_eq_T.iloc[0, 0]+shift_d18O),
-     apply_theta(df_eq_T.iloc[0, 0], df_eq_T.iloc[0, 1], shift_d18O=shift_d18O, theta=theta_coral))
+     apply_theta(df_eq_T.iloc[0, 0], df_eq_T.iloc[0, 1], shift_d18O=shift_d18O, theta=df["theta_coral_unique"].mean()))
 ax.annotate("",
             (A[0], A[1]),
             (B[0], B[1]),
             ha="center", va="center", zorder=-1,
             arrowprops=dict(arrowstyle="-|>", color="w", lw=1.5))
-ax.text(B[0], B[1], r"$\bf{coral}$" +"\n"+ r"$\bf{'vital}$ $\bf{effects'}$" + "\n" + f"($\\theta_{{coral}}$ = {theta_coral:.3f})",
+ax.text(B[0], B[1], r"$\bf{coral}$" + "\n" + r"$\bf{'vital}$ $\bf{effects'}$" + "\n" + f"($\\theta_{{coral}}$ = {theta_coral:.3f})",
         ha="right", va="center", color="w")
 
 # Mark the warm-water coral apparent and growth temperatures
@@ -386,7 +386,7 @@ ax.annotate(r"$\it{T}$ from $\delta^{18}O$" + "\n(" + str(round(df_eq_d18O.iloc[
             (prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1]),
             (prime(df_eq_d18O.iloc[0, 0])-3, df_eq_d18O.iloc[0, 1]+37),
             ha = "left", va = "bottom", color = "w",
-            arrowprops=dict(arrowstyle="-|>", color="w"))
+            arrowprops=dict(arrowstyle="->", color="w"))
 ax.annotate("",
             (prime(mean_d18O), df_eq_d18O.iloc[0, 1]),
             (prime(mean_d18O), -130),
@@ -401,7 +401,7 @@ ax.annotate("growth $\it{T}$" + "\n(" + str(round(df_eq_T.iloc[0, 2])) + " °C)"
             (prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1]),
             xytext=(prime(df_eq_T.iloc[0, 0])-2, df_eq_T.iloc[0, 1]+45),
             ha="left", va="top", color = "w",
-            arrowprops=dict(arrowstyle="-|>", color="w"))
+            arrowprops=dict(arrowstyle="->", color="w"))
 plt.plot(prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1],
             marker=".", c="w", mec="k", mew=0.5, zorder=10)
 
