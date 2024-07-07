@@ -338,7 +338,8 @@ plt.close()
 df = dfAll[dfAll["SampleName"] == "SK-DS3"]
 
 plt.rcParams.update({'font.size': 16})
-plt.rcParams["figure.figsize"] = (5, 3)
+plt.rcParams['figure.dpi'] = 600
+plt.rcParams["figure.figsize"] = (5, 2.775)
 plt.rcParams["lines.linewidth"] = 1  # error bar width
 plt.rcParams["patch.linewidth"] = 1  # marker edge width
 
@@ -363,7 +364,7 @@ df_eq = plot_equilibrium(Dp17Ow=-11, d18Ow=1,
                          ax=ax, color="w", highlight=False, mark_water=False)
 
 plt.text(df_eq["d18O"].iloc[-1], df_eq["Dp17O"].iloc[-1],
-         "equilibrium\n(10–100 °C)", ha="right", va="center", c="w")
+         "carbonate\nequilibrium", ha="right", va="center", c="w")
 
 # Vital effect arrow (plot already calculated values)
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-df["T_17O"].mean()).abs().argsort()[:1]]
@@ -433,5 +434,5 @@ x_scale = fig.get_size_inches()[0]*600 / im.shape[1]
 resized_im = zoom(im, (y_scale, x_scale, 1))
 fig.figimage(resized_im, zorder = -12)
 
-plt.savefig(sys.path[0] + "/SK Graphical Abstract.png")
+plt.savefig(sys.path[0] + "/SK Graphical Abstract.png", bbox_inches="tight")
 plt.close("all")
