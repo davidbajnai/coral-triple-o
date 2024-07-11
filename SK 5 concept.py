@@ -1,4 +1,6 @@
-# Showing the concept of the paper
+# This code is used to:
+# create the figures showing the concept of the paper
+
 # INPUT: SK Table S-3 part-2.csv, seawater.csv, background.jpeg
 # OUTPUT: SK Figure 2.png, SK Graphical Abstract.png
 
@@ -24,9 +26,8 @@ plt.rcParams["lines.linewidth"] = 0.5
 plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (4, 4)
 plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
 
-# Functions that make life easier
+# Define additional functions
 def a18_cc(T):
 
     # Used for the discussion
@@ -329,6 +330,7 @@ plt.ylim(-110, 10)
 plt.ylabel("$\Delta^{\prime 17}$O (ppm)")
 plt.xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
+plt.tight_layout()
 plt.savefig(sys.path[0] + "/SK Figure 2.png")
 plt.close()
 
@@ -339,7 +341,7 @@ df = dfAll[dfAll["SampleName"] == "SK-DS3"]
 
 plt.rcParams.update({'font.size': 16})
 plt.rcParams['figure.dpi'] = 600
-plt.rcParams["figure.figsize"] = (5, 2.775)
+plt.rcParams["figure.figsize"] = (5, 3)
 plt.rcParams["lines.linewidth"] = 1  # error bar width
 plt.rcParams["patch.linewidth"] = 1  # marker edge width
 
@@ -434,5 +436,6 @@ x_scale = fig.get_size_inches()[0]*600 / im.shape[1]
 resized_im = zoom(im, (y_scale, x_scale, 1))
 fig.figimage(resized_im, zorder = -12)
 
-plt.savefig(sys.path[0] + "/SK Graphical Abstract.png", bbox_inches="tight")
+plt.tight_layout()
+plt.savefig(sys.path[0] + "/SK Graphical Abstract.png")
 plt.close("all")

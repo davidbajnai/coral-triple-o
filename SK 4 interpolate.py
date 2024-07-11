@@ -1,3 +1,6 @@
+# This code is used to:
+# Calculate "vital effect"-corrected temperatures
+
 # INPUT: SK Table S-3 part-3.csv
 # OUTPUT: SK Figure 3.png, SK Table S-3.csv, SK Table S-3.xlsx, SK Table S-3 short.xlsx
 
@@ -22,7 +25,6 @@ plt.rcParams["lines.linewidth"] = 0.5
 plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
 
 # Functions that make life easier
 def a18_cc(T):
@@ -304,6 +306,7 @@ ax.errorbar(prime(df["d18O_AC"]), df["Dp17O_AC"],
 ax.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
 ax.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
 
+plt.tight_layout()
 plt.savefig(sys.path[0] + "/SK Figure S6.png")
 plt.close()
 
@@ -379,6 +382,7 @@ ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
 ax2.set_ylim(ylim)
 ax2.set_xlim(xlim)
 
+plt.tight_layout()
 plt.savefig(sys.path[0] + "/SK Figure 3.png")
 plt.close("all")
 
