@@ -7,6 +7,7 @@
 # >>>>>>>>>
 
 # Import libraries
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -15,6 +16,7 @@ from scipy.spatial.distance import cdist
 
 # Import functions
 from functions import *
+
 
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
@@ -25,6 +27,10 @@ plt.rcParams["lines.linewidth"] = 0.5
 plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
+plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['savefig.transparent'] = False
+plt.rcParams['mathtext.default'] = 'regular'
+
 
 # Functions that make life easier
 def a18_cc(T):
@@ -237,7 +243,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
 
 
 # Read data from CSV files
-df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-3.csv", sep=",")
+df = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3 part-3.csv"), sep=",")
 
 
 # Assign colors and markers
@@ -303,11 +309,11 @@ ax.errorbar(prime(df["d18O_AC"]), df["Dp17O_AC"],
             yerr=df["Dp17O_error"],
             fmt="none", color="k", zorder=-1)
 
-ax.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
-ax.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
+ax.set_ylabel("$\Delta\prime^{17}$O (ppm)")
+ax.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 
 plt.tight_layout()
-plt.savefig(sys.path[0] + "/SK Figure S6.png")
+plt.savefig(os.path.join(sys.path[0], "SK Figure S6"))
 plt.close()
 
 
@@ -373,7 +379,7 @@ for text in legend.texts:
     text.set_fontsize(5.5)
     text.set_fontstyle('italic')
 
-ax2.set_ylabel(r"Temperature corrected for 'vital effects' ($\it{T}_{\Delta\prime^{17}O}$, °C)")
+ax2.set_ylabel(r"Temperature corrected for vital effects ($\it{T}_{\Delta^{\prime 17}O}$, °C)")
 ax2.set_xlabel("Growth temperature (°C)")
 
 ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
@@ -382,14 +388,14 @@ ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
 ax2.set_ylim(ylim)
 ax2.set_xlim(xlim)
 
-plt.tight_layout()
-plt.savefig(sys.path[0] + "/SK Figure 3.png")
+# plt.tight_layout()
+plt.savefig(os.path.join(sys.path[0], "SK Figure 3"))
 plt.close("all")
 
-df.to_csv(sys.path[0] + "/SK Table S-3.csv", index=False)
-df.to_excel(sys.path[0] + "/SK Table S-3.xlsx", index=False)
+df.to_csv(os.path.join(sys.path[0], "SK Table S-3.csv"), index=False)
+df.to_excel(os.path.join(sys.path[0], "SK Table S-3.xlsx"), index=False)
 
 # Create an abbreviated version of Table S-3 for the SI
 df = df[["SampleName", "Type", "Species", "d18O_AC", "d18O_error",
          "Dp17O_AC", "Dp17O_error", "Replicates", "theta_coral"]]
-df.to_excel(sys.path[0] + "/SK Table S-3 short.xlsx", index=False)
+df.to_excel(os.path.join(sys.path[0], "SK Table S-3 short.xlsx"), index=False)

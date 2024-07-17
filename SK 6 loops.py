@@ -6,6 +6,7 @@
 # >>>>>>>>>
 
 # Import libraries
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -21,17 +22,19 @@ plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['savefig.transparent'] = False
+plt.rcParams['mathtext.default'] = 'regular'
 
 # isoDIC models
-isoDIC_header = pd.read_csv(sys.path[0] + "/isoDIC_header.csv", sep=",")
-isoDIC_cwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.8_T9.csv", sep=",")
+isoDIC_header = pd.read_csv(os.path.join(sys.path[0], "isoDIC_header.csv"), sep=",")
+isoDIC_cwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T9.csv"), sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
-isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.5_T27.csv", sep=",")
+isoDIC_wwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T27.csv"), sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
 
-isoDIC_cwc2 = pd.read_csv(sys.path[0] + "/isoDIC_pH8.5_T9.csv", sep=",")
+isoDIC_cwc2 = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T9.csv"), sep=",")
 isoDIC_cwc2.columns = isoDIC_header.columns
-isoDIC_wwc2 = pd.read_csv(sys.path[0] + "/isoDIC_pH8.8_T27.csv", sep=",")
+isoDIC_wwc2 = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T27.csv"), sep=",")
 isoDIC_wwc2.columns = isoDIC_header.columns
 
 # CREATE FIGURE S4
@@ -95,12 +98,10 @@ ax1.errorbar(-0.5, -60,
              fmt="none", color="k", lw =.8)
 
 # Axis properties
-ax1.legend(loc='upper right', bbox_to_anchor=(2.65, 1))
-
 ax1.text(0.02, 0.98, "a", size=14, ha="left", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
-ax1.set_ylabel("$\Delta^{\prime 17}O$ disequilibrium (ppm)")
+ax1.set_ylabel("$\Delta\prime ^{17}O$ disequilibrium (ppm)")
 ax1.set_xlabel("$\delta^{18}O$ disequilibrium (‰)")
 
 ax1.set_xlim(-6.2, 0.2)
@@ -110,13 +111,13 @@ ax1.set_ylim(-72, 2)
 
 # Add the isoDIC models
 ax2.plot(isoDIC_wwc["D64_CO3"]-isoDIC_wwc["D64_CO3"].iloc[0], isoDIC_wwc["D63_CO3"]-isoDIC_wwc["D63_CO3"].iloc[0],
-         c="darkred", ls="solid", zorder=1, lw=1.5)
+         c="darkred", ls="solid", zorder=1, lw=1.5, label=r"pH = 8.5, $\it{T}$ = 27 °C")
 ax2.plot(isoDIC_cwc["D64_CO3"]-isoDIC_cwc["D64_CO3"].iloc[0], isoDIC_cwc["D63_CO3"]-isoDIC_cwc["D63_CO3"].iloc[0],
-         c="darkblue", ls="solid", zorder=1, lw=1.5)
+         c="darkblue", ls="solid", zorder=1, lw=1.5, label=r"pH = 8.8, $\it{T}$ = 9 °C")
 ax2.plot(isoDIC_wwc2["D64_CO3"]-isoDIC_wwc2["D64_CO3"].iloc[0], isoDIC_wwc2["D63_CO3"]-isoDIC_wwc2["D63_CO3"].iloc[0],
-         c="hotpink", ls="solid", zorder=2, lw=1)
+         c="hotpink", ls="solid", zorder=2, lw=1, label=r"pH = 8.8, $\it{T}$ = 27 °C")
 ax2.plot(isoDIC_cwc2["D64_CO3"]-isoDIC_cwc2["D64_CO3"].iloc[0], isoDIC_cwc2["D63_CO3"]-isoDIC_cwc2["D63_CO3"].iloc[0],
-         c="cornflowerblue", ls="solid", zorder=2, lw=1)
+         c="cornflowerblue", ls="solid", zorder=2, lw=1, label=r"pH = 8.5, $\it{T}$ = 9 °C")
 
 # Add the arrow markers
 ax2.annotate("",
@@ -155,7 +156,10 @@ ax2.scatter(0, 0, marker="X", color="#747067", label="Equilibrium", zorder=10, l
 ax2.text(0.98, 0.02, "Commonly achieved\nmeasurement precision", size=6, ha="right", va="bottom", transform=ax2.transAxes)
 ax2.errorbar(-0.025, -0.065,
              xerr=0.020, yerr=0.006,
-             fmt="none", color="k", lw =.8)
+             fmt="none", color="k", lw=.8)
+
+# Legend
+ax2.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
 
 # Axis properties
 ax2.text(0.02, 0.98, "b", size=14, ha="left", va="top",
@@ -164,6 +168,6 @@ ax2.text(0.02, 0.98, "b", size=14, ha="left", va="top",
 ax2.set_ylabel("$\Delta_{47}$ disequilibrium (‰)")
 ax2.set_xlabel("$\Delta_{48}$ disequilibrium (‰)")
 
-
-plt.savefig(sys.path[0] + "/SK Figure S4.png")
+# plt.tight_layout()
+plt.savefig(os.path.join(sys.path[0], "SK Figure S4"))
 plt.close()

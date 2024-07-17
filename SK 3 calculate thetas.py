@@ -8,10 +8,10 @@
 
 # Import libraries
 import sys
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage import zoom
 
 # Import functions
 from functions import *
@@ -27,6 +27,8 @@ plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['savefig.transparent'] = False
+plt.rcParams['mathtext.default'] = 'regular'
 
 
 # Functions that make life easier
@@ -166,12 +168,12 @@ def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fl
 
 
 # Import data from CSV files
-isoDIC_header = pd.read_csv(sys.path[0] + "/isoDIC_header.csv", sep=",")
-isoDIC_cwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.8_T9.csv", sep=",")
+isoDIC_header = pd.read_csv(os.path.join(sys.path[0], "isoDIC_header.csv"), sep=",")
+isoDIC_cwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T9.csv"), sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
-isoDIC_wwc = pd.read_csv(sys.path[0] + "/isoDIC_pH8.5_T27.csv", sep=",")
+isoDIC_wwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T27.csv"), sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
-df = pd.read_csv(sys.path[0] + "/SK Table S-3 part-2.csv", sep=",")
+df = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3 part-2.csv"), sep=",")
 
 
 # Calculate equilibrium values using the "measured + database" d18Osw and T values
@@ -272,7 +274,8 @@ ax.fill_between(x_values, theta_wwc - theta_wwc_err, theta_wwc + theta_wwc_err, 
 ax.set_ylabel("$\\theta_{coral}$")
 ax.set_xticks([])
 
-plt.savefig(sys.path[0] + "/SK Figure S5.png")
+# plt.tight_layout()
+plt.savefig(os.path.join(sys.path[0], "SK Figure S5"))
 plt.close()
 
 
@@ -312,8 +315,8 @@ for i in range(len(df)):
 ax1.text(0.08, 0.98, "a", size=14, ha="right", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
-ax1.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
-ax1.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
+ax1.set_ylabel("$\Delta\prime^{17}$O (ppm)")
+ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 
 # Subplot B: Disequilibrium Dp17O and d18O values
 
@@ -427,17 +430,18 @@ ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
          transform=ax2.transAxes, fontweight="bold")
 
 # Axis properties
-ax2.set_ylabel("$\Delta^{\prime 17}$O$_{measured}$ - $\Delta^{\prime 17}$O$_{expected}$ (ppm)")
+ax2.set_ylabel("$\Delta\prime^{17}$O$_{measured}$ - $\Delta\prime^{17}$O$_{expected}$ (ppm)")
 ax2.set_xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
 
 plt.xlim(-7.5, 0.5)
 plt.ylim(-70, 25)
 
-plt.savefig(sys.path[0] + "/SK Figure 1.png")
+# plt.tight_layout()
+plt.savefig(os.path.join(sys.path[0], "SK Figure 1"))
 plt.close()
 
 # Save data to CSV file
-df.to_csv(sys.path[0] + "/SK Table S-3 part-3.csv", index=False)
+df.to_csv(os.path.join(sys.path[0], "SK Table S-3 part-3.csv"), index=False)
 
 
 # Do some additional calculations for the discussion

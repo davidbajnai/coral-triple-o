@@ -7,6 +7,7 @@
 # >>>>>>>>>
 
 # Import libraries
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -17,6 +18,7 @@ from scipy.spatial.distance import cdist
 # Import functions
 from functions import *
 
+
 # Plot parameters
 plt.rcParams["legend.loc"] = "best"
 plt.rcParams.update({'font.size': 7})
@@ -26,6 +28,10 @@ plt.rcParams["lines.linewidth"] = 0.5
 plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (4, 4)
 plt.rcParams["savefig.dpi"] = 600
+plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['savefig.transparent'] = False
+plt.rcParams['mathtext.default'] = 'regular'
+
 
 # Define additional functions
 def a18_cc(T):
@@ -232,8 +238,8 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
 
 
 # Read data from CSV files
-swdf = pd.read_csv(sys.path[0] + "/seawater.csv", sep=",")
-dfAll = pd.read_csv(sys.path[0] + "/SK Table S-3.csv", sep=",")
+swdf = pd.read_csv(os.path.join(sys.path[0], "seawater.csv"), sep=",")
+dfAll = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3.csv"), sep=",")
 theta_coral = round(dfAll["theta_coral"].mean(), 3)
 print(f"theta_coral: {theta_coral:.3f}")
 df = dfAll[dfAll["SampleName"] == "SK-SA5"]
@@ -252,7 +258,7 @@ df_eq = plot_equilibrium(Dp17Ow=df["Dp17Osw"].mean(), d18Ow=df["d18Osw_database"
                          Tmin=10, Tmax=100,
                          ax=ax, color="k", highlight=True)
 
-ax.annotate("Carbonate equilibrium\n(10–100 °C)",
+ax.annotate("Carbonate equilibrium\n(10\u2013100 °C)",
             (prime(df_eq.iloc[-1, 0]), df_eq.iloc[-1, 1]),
             xytext=(prime(df_eq.iloc[-1, 0]-3), df_eq.iloc[-1, 1]),
             ha="right", va="center", c="k",
@@ -300,7 +306,7 @@ rT, rTerr = get_17O_temp(d18O_coral=df["d18O_AC"].mean(),
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-rT).abs().argsort()[:1]]
 ax.scatter(prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1],
            marker=".", fc="#FF7A00", ec="k", zorder=10)
-ax.annotate("reconstructed\ngrowth $\it{T}$" + "\n(" + f"{rT:.0f}±{rTerr:.0f} °C)",
+ax.annotate("reconstructed\ngrowth $\it{T}$" + "\n(" + f"{rT:.0f} ± {rTerr:.0f} °C)",
             (prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1]),
             xytext=(prime(df_eq_T.iloc[0, 0]+4), df_eq_T.iloc[0, 1]+10),
             ha="left", va="top",
@@ -327,11 +333,11 @@ ax.text(np.mean(x)-1, np.mean(y), "coral",
 # Axis properties
 plt.xlim(-2, 47)
 plt.ylim(-110, 10)
-plt.ylabel("$\Delta^{\prime 17}$O (ppm)")
-plt.xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
+plt.ylabel("$\Delta\prime^{17}$O (ppm)")
+plt.xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 
 plt.tight_layout()
-plt.savefig(sys.path[0] + "/SK Figure 2.png")
+plt.savefig(os.path.join(sys.path[0], "SK Figure 2"))
 plt.close()
 
 
@@ -379,7 +385,7 @@ ax.annotate("",
             (B[0], B[1]),
             ha="center", va="center", zorder=-1,
             arrowprops=dict(arrowstyle="-|>", color="w", lw=1.5))
-ax.text(B[0], B[1], r"$\bf{coral}$" + "\n" + r"$\bf{'vital}$ $\bf{effects'}$" + "\n" + f"($\\theta_{{coral}}$ = {theta_coral:.3f})",
+ax.text(B[0], B[1], r"$\bf{coral}$" + "\n" + r"$\bf{vital}$ $\bf{effects}$" + "\n" + f"($\\theta_{{coral}}$ = {theta_coral:.3f})",
         ha="right", va="center", color="w")
 
 # Mark the warm-water coral apparent and growth temperatures
@@ -426,16 +432,16 @@ plt.xlim(-2, 42)
 plt.ylim(-130, 10)
 plt.xticks([])
 plt.yticks([])
-plt.ylabel("$\Delta^{\prime 17}$O")
-plt.xlabel("$\delta^{\prime 18}$O")
+plt.ylabel("$\Delta\prime^{17}$O")
+plt.xlabel("$\delta\prime^{18}$O")
 
 # Insert background image
-im = plt.imread(sys.path[0] + "/background.jpeg")
+im = plt.imread(os.path.join(sys.path[0], "background.jpeg"))
 y_scale = fig.get_size_inches()[1]*600 / im.shape[0]
 x_scale = fig.get_size_inches()[0]*600 / im.shape[1]
 resized_im = zoom(im, (y_scale, x_scale, 1))
 fig.figimage(resized_im, zorder = -12)
 
 plt.tight_layout()
-plt.savefig(sys.path[0] + "/SK Graphical Abstract.png")
-plt.close("all")
+plt.savefig(os.path.join(sys.path[0], "SK Graphical Abstract"))
+plt.close()

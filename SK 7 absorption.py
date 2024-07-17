@@ -6,6 +6,7 @@
 # >>>>>>>>>
 
 # Import libraries
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -25,6 +26,8 @@ plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (4, 4)
 plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['savefig.transparent'] = False
+plt.rcParams['mathtext.default'] = 'regular'
 
 # Functions that make life easier
 
@@ -225,10 +228,12 @@ plt.text(prime(d18O_diff), Dp17O_diff,
          "diffusion",
          ha="center", va="center", color="#FF9B00")
 
-ax.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW)")
-ax.set_ylabel("$\Delta^{\prime 17}$O (ppm)")
+ax.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
+ax.set_ylabel("$\Delta\prime^{17}$O (ppm)")
 
 ax.set_ylim(-205, 205)
 ax.set_xlim(-41, 71)
 
-plt.savefig(sys.path[0] + "/SK Figure S7.png")
+plt.tight_layout()
+plt.savefig(os.path.join(sys.path[0], "SK Figure S7"))
+plt.close()

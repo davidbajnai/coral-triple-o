@@ -7,6 +7,7 @@
 # >>>>>>>>>
 
 # Import libraries
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -25,6 +26,8 @@ plt.rcParams["patch.linewidth"] = 0.5
 plt.rcParams["figure.figsize"] = (9, 4)
 plt.rcParams["savefig.dpi"] = 600
 plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['savefig.transparent'] = False
+plt.rcParams['mathtext.default'] = 'regular'
 
 
 # Functions that make life easier
@@ -142,13 +145,14 @@ def scaleData(df, project):
                              fmt="none", color="#cacaca", zorder=0)
         
         plt.title(f"Measurement period: {period}")
-        plt.ylabel("$\Delta^{\prime 17}$O (ppm, unscaled CO$_2$)")
+        plt.ylabel("$\Delta\prime^{17}$O (ppm, unscaled CO$_2$)")
         plt.xlabel("Measurement date")
         plt.legend(loc='upper right', bbox_to_anchor=(1.18, 1))
         plt.text(0.98, 0.98, SuppFig[FigNum], size=14, ha="right", va="top",
                  transform=ax.transAxes, fontweight="bold")
 
-        plt.savefig(sys.path[0] + "/" + f"{project} Figure S2{SuppFig[FigNum]}.png")
+        # plt.tight_layout()
+        plt.savefig(os.path.join(sys.path[0], f"{project} Figure S2{SuppFig[FigNum]}"))
         plt.close()
 
         # Exclude the standards from the exported dataframe
@@ -181,7 +185,7 @@ def average_data(df):
 # Here we go!
 
 # Scale the data
-df = scaleData(pd.read_csv(sys.path[0] + "/SK Table S-2.csv"), "SK")
+df = scaleData(pd.read_csv(os.path.join(sys.path[0], "SK Table S-2.csv")), "SK")
 
 # Average the data
 df_avg = average_data(df)
@@ -218,8 +222,8 @@ for cat in categories:
 ax1.text(0.98, 0.98, "a", size=14, ha="right", va="top",
          transform=ax1.transAxes, fontweight="bold")
 
-ax1.set_ylabel("$\Delta^{\prime 17}$O (ppm, CO$_2$)")
-ax1.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW, CO$_2$)")
+ax1.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
+ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
 
 ylim = ax1.get_ylim()
 xlim = ax1.get_xlim()
@@ -237,16 +241,17 @@ for cat in categories:
 ax2.text(0.98, 0.98, "b", size=14, ha="right", va="top",
          transform=ax2.transAxes, fontweight="bold")
 
-ax2.set_ylabel("$\Delta^{\prime 17}$O (ppm, CO$_2$)")
-ax2.set_xlabel("$\delta^{\prime 18}$O (‰, VSMOW, CO$_2$)")
+ax2.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
+ax2.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
 
 ax2.set_ylim(ylim)
 ax2.set_xlim(xlim)
 
 ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
 
-plt.savefig(sys.path[0] + "/SK Figure S3.png")
-plt.close("all")
+# plt.tight_layout()
+plt.savefig(os.path.join(sys.path[0], "SK Figure S3"))
+plt.close()
 
 # Print some values for the manuscript
 print(f"\nAverage error for Dp17O: {df_avg['Dp17O_error'].mean():.0f} ppm")
@@ -285,4 +290,4 @@ Passey_data_df = pd.DataFrame([Passey_data])
 df_avg = pd.concat([df_avg, Passey_data_df], ignore_index=True)
 
 # Export CSV
-df_avg.to_csv(sys.path[0] + "/SK Table S-3 part-1.csv", index=False)
+df_avg.to_csv(os.path.join(sys.path[0], "SK Table S-3 part-1.csv"), index=False)
