@@ -335,23 +335,20 @@ for cat in cat1:
             ax1.errorbar(x, y, xerr=xerr, yerr=yerr,
                             fmt="none", color=colors[dog], zorder=0)
 
+# 1:1 line
 ax1.set_xlim(-1, 31)
 ax1.set_ylim(-6, 66)
-ylim = ax1.get_ylim()
-xlim = ax1.get_xlim()
-
-# 1:1 line
-ax1.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
 xmin, xmax = ax1.get_xlim()
 ymin, ymax = ax1.get_ylim()
+ax1.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
 angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax1.text(20, 18, "1:1", ha="center", va="center", rotation=angle)
 
+# Axis properties
 ax1.set_ylabel(r"Temperature from $\delta^{18}O$-thermometry (°C)")
 ax1.set_xlabel("Growth temperature (°C)")
-
-ax1.text(0.08, 0.98, "a", size=14, ha="right", va="top",
-         transform=ax1.transAxes, fontweight="bold")
+ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
+         transform=ax1.transAxes)
 
 
 # Subplot B
@@ -379,19 +376,18 @@ for text in legend.texts:
     text.set_fontsize(5.5)
     text.set_fontstyle('italic')
 
+# Axis properties
+ax2.set_ylim(ymin, ymax)
+ax2.set_xlim(xmin, xmax)
 ax2.set_ylabel(r"Temperature corrected for vital effects ($\it{T}_{\Delta^{\prime 17}O}$, °C)")
 ax2.set_xlabel("Growth temperature (°C)")
+ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
+         transform=ax2.transAxes)
 
-ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
-         transform=ax2.transAxes, fontweight="bold")
-
-ax2.set_ylim(ylim)
-ax2.set_xlim(xlim)
-
-# plt.tight_layout()
 plt.savefig(os.path.join(sys.path[0], "SK Figure 3"))
 plt.close("all")
 
+# Save the data
 df.to_csv(os.path.join(sys.path[0], "SK Table S-3.csv"), index=False)
 df.to_excel(os.path.join(sys.path[0], "SK Table S-3.xlsx"), index=False)
 

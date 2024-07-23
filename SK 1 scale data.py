@@ -144,14 +144,16 @@ def scaleData(df, project):
                              yerr=group["Dp17OError"],
                              fmt="none", color="#cacaca", zorder=0)
         
-        plt.title(f"Measurement period: {period}")
-        plt.ylabel("$\Delta\prime^{17}$O (ppm, unscaled CO$_2$)")
-        plt.xlabel("Measurement date")
         plt.legend(loc='upper right', bbox_to_anchor=(1.18, 1))
-        plt.text(0.98, 0.98, SuppFig[FigNum], size=14, ha="right", va="top",
-                 transform=ax.transAxes, fontweight="bold")
 
-        # plt.tight_layout()
+        plt.title(f"Measurement period: {period}")
+
+        # Axis properties
+        ax.set_ylabel("$\Delta\prime^{17}$O (ppm, unscaled CO$_2$)")
+        ax.set_xlabel("Measurement date")
+        ax.text(0.02, 0.98, "(" + SuppFig[FigNum] + ")", size=10, ha="left", va="top",
+                transform=ax.transAxes)
+
         plt.savefig(os.path.join(sys.path[0], f"{project} Figure S2{SuppFig[FigNum]}"))
         plt.close()
 
@@ -219,14 +221,14 @@ for cat in categories:
                  yerr=df["Dp17OError"], xerr=df["d18OError"],
                  fmt="none", color="#cacaca", zorder=0)
 
-ax1.text(0.98, 0.98, "a", size=14, ha="right", va="top",
-         transform=ax1.transAxes, fontweight="bold")
-
-ax1.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
-ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
-
+# Axis properties
 ylim = ax1.get_ylim()
 xlim = ax1.get_xlim()
+ax1.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
+ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
+ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
+         transform=ax1.transAxes)
+
 
 # Subplot B
 
@@ -238,18 +240,16 @@ for cat in categories:
                  yerr=df_avg["Dp17O_error"], xerr=df_avg["d18O_error"],
                  fmt="none", color="#cacaca", zorder=0)
 
-ax2.text(0.98, 0.98, "b", size=14, ha="right", va="top",
-         transform=ax2.transAxes, fontweight="bold")
-
-ax2.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
-ax2.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
-
-ax2.set_ylim(ylim)
-ax2.set_xlim(xlim)
-
 ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
 
-# plt.tight_layout()
+# Axis properties
+ax2.set_ylim(ylim)
+ax2.set_xlim(xlim)
+ax2.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
+ax2.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
+ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
+         transform=ax2.transAxes)
+
 plt.savefig(os.path.join(sys.path[0], "SK Figure S3"))
 plt.close()
 

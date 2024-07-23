@@ -232,17 +232,19 @@ for i, difference in enumerate(Dd18Osw):
 				 ha='right', va='center')
 
 # 1:1 line
-ax1.plot([0, 1.75], [0, 1.75], c = "k", ls="dashed", zorder = -1)
+ax1.set_xlim(-0.05, 1.8)
+ax1.set_ylim(-0.05, 1.8)
 xmin, xmax = ax1.get_xlim()
 ymin, ymax = ax1.get_ylim()
+ax1.plot([-10, 20], [-10, 20], c = "k", ls="dashed", zorder = -1)
 angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax1.text(1.5, 1.45, "1:1", ha="center", va="center", rotation=angle)
 
-ax1.text(0.02, 0.98, "a", size=14, ha="left", va="top",
-         transform=ax1.transAxes, fontweight="bold")
-
+# Axis properties
 ax1.set_xlabel('Measured $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
 ax1.set_ylabel('Database $\delta^{18}$O$_{sw}$ (‰, VSMOW)')
+ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
+         transform=ax1.transAxes)
 
 
 # Subplot B: Difference between measured and database temperature
@@ -262,21 +264,23 @@ for i, difference in enumerate(DT):
                  ha='right', va='center')
 
 # 1:1 line
-ax2.plot([0, 30], [0, 30], c="k", ls="dashed", zorder=-1)
-xmin, xmax = ax1.get_xlim()
-ymin, ymax = ax1.get_ylim()
+ax2.set_xlim(-1, 31)
+ax2.set_ylim(-1, 31)
+xmin, xmax = ax2.get_xlim()
+ymin, ymax = ax2.get_ylim()
+ax2.plot([-10, 40], [-10, 40], c="k", ls="dashed", zorder=-1)
 angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax2.text(20, 19, "1:1", ha="center", va="center", rotation=angle)
 
-plt.text(0.02, 0.98, "b", size=14, ha="left", va="top",
-         transform=ax2.transAxes, fontweight="bold")
-
-ax2.set_xlabel('Measured temperature (°C)')
-ax2.set_ylabel('Database temperature (°C)')
-
 ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
 
-# plt.tight_layout()
+# Axis properties
+ax2.set_xlabel('Measured temperature (°C)')
+ax2.set_ylabel('Database temperature (°C)')
+ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
+         transform=ax2.transAxes)
+
+
 plt.savefig(os.path.join(sys.path[0], "SK Figure S1"))
 plt.close("all")
 

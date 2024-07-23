@@ -171,8 +171,11 @@ def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fl
 isoDIC_header = pd.read_csv(os.path.join(sys.path[0], "isoDIC_header.csv"), sep=",")
 isoDIC_cwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T9.csv"), sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
+isoDIC_cwc = isoDIC_cwc - isoDIC_cwc.iloc[0]
 isoDIC_wwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T27.csv"), sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
+isoDIC_wwc = isoDIC_wwc - isoDIC_wwc.iloc[0]
+
 df = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3 part-2.csv"), sep=",")
 
 
@@ -234,7 +237,6 @@ means = masked_values.mean(axis=1)
 df["theta_coral_unique"] = np.round(means, 4)
 
 
-
 # Assign colors and markers
 cat1 = df["Species"].unique()
 markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
@@ -271,10 +273,10 @@ ax.fill_between(x_values, theta_cwc - theta_cwc_err, theta_cwc + theta_cwc_err, 
 ax.axhline(theta_wwc, color="red", ls="-")
 ax.fill_between(x_values, theta_wwc - theta_wwc_err, theta_wwc + theta_wwc_err, color="red", alpha=0.2, lw = 0)
 
+# Axis properties
 ax.set_ylabel("$\\theta_{coral}$")
 ax.set_xticks([])
 
-# plt.tight_layout()
 plt.savefig(os.path.join(sys.path[0], "SK Figure S5"))
 plt.close()
 
@@ -312,11 +314,11 @@ for i in range(len(df)):
              [df["Dp17O_AC"][i], df["Dp17O_equilibrium"][i]],
              c="#cacaca", ls="dashed", lw=0.8, zorder=-1)
 
-ax1.text(0.08, 0.98, "a", size=14, ha="right", va="top",
-         transform=ax1.transAxes, fontweight="bold")
-
+# Axis properties
 ax1.set_ylabel("$\Delta\prime^{17}$O (ppm)")
 ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
+ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
+         transform=ax1.transAxes)
 
 # Subplot B: Disequilibrium Dp17O and d18O values
 
@@ -359,24 +361,24 @@ ax2.errorbar(0, 0,
 cwc_target = (isoDIC_cwc["time(s)"] - 15*60).abs().idxmin()
 wwc_target = (isoDIC_wwc["time(s)"] - 15*60).abs().idxmin()
 
-ax2.plot(isoDIC_wwc["d18_CO3"]-isoDIC_wwc["d18_CO3"].iloc[0], isoDIC_wwc["D17_CO3"]-isoDIC_wwc["D17_CO3"].iloc[0],
+ax2.plot(isoDIC_wwc["d18_CO3"], isoDIC_wwc["D17_CO3"],
          c="darkred", ls="solid", zorder=3, lw=1)
-ax2.plot(isoDIC_cwc["d18_CO3"]-isoDIC_cwc["d18_CO3"].iloc[0], isoDIC_cwc["D17_CO3"]-isoDIC_cwc["D17_CO3"].iloc[0],
+ax2.plot(isoDIC_cwc["d18_CO3"], isoDIC_cwc["D17_CO3"],
          c="darkblue", ls="solid", zorder=3, lw=1)
 ax2.annotate("",
-             (isoDIC_wwc["d18_CO3"].iloc[wwc_target]-isoDIC_wwc["d18_CO3"].iloc[0],
-              isoDIC_wwc["D17_CO3"].iloc[wwc_target]-isoDIC_wwc["D17_CO3"].iloc[0]),
-             (isoDIC_wwc["d18_CO3"].iloc[wwc_target-1]-isoDIC_wwc["d18_CO3"].iloc[0],
-              isoDIC_wwc["D17_CO3"].iloc[wwc_target-1]-isoDIC_wwc["D17_CO3"].iloc[0]),
+             (isoDIC_wwc["d18_CO3"].iloc[wwc_target],
+              isoDIC_wwc["D17_CO3"].iloc[wwc_target]),
+             (isoDIC_wwc["d18_CO3"].iloc[wwc_target-1],
+              isoDIC_wwc["D17_CO3"].iloc[wwc_target-1]),
              ha="center", va="center", zorder=-1,
-             arrowprops=dict(arrowstyle="->", color="darkred", lw=1))
+             arrowprops=dict(arrowstyle="-|>", color="darkred", lw=1))
 ax2.annotate("",
-             (isoDIC_cwc["d18_CO3"].iloc[cwc_target]-isoDIC_cwc["d18_CO3"].iloc[0],
-              isoDIC_cwc["D17_CO3"].iloc[cwc_target]-isoDIC_cwc["D17_CO3"].iloc[0]),
-             (isoDIC_cwc["d18_CO3"].iloc[cwc_target-1]-isoDIC_cwc["d18_CO3"].iloc[0],
-              isoDIC_cwc["D17_CO3"].iloc[cwc_target-1]-isoDIC_cwc["D17_CO3"].iloc[0]),
+             (isoDIC_cwc["d18_CO3"].iloc[cwc_target],
+              isoDIC_cwc["D17_CO3"].iloc[cwc_target]),
+             (isoDIC_cwc["d18_CO3"].iloc[cwc_target-1],
+              isoDIC_cwc["D17_CO3"].iloc[cwc_target-1]),
              ha="center", va="center", zorder=-1,
-             arrowprops=dict(arrowstyle="->", color="darkblue", lw=1))
+             arrowprops=dict(arrowstyle="-|>", color="darkblue", lw=1))
 
 ax2.text(-1, -30,
          "CO$_2$ absorbtion\n(modelled)",
@@ -426,15 +428,13 @@ for text in legend.texts:
     if 'Equilibrium' not in text.get_text() and 'vent coral' not in text.get_text():
         text.set_fontstyle('italic')
 
-ax2.text(0.08, 0.98, "b", size=14, ha="right", va="top",
-         transform=ax2.transAxes, fontweight="bold")
-
 # Axis properties
+ax2.set_xlim(-7.5, 0.5)
+ax2.set_ylim(-70, 25)
 ax2.set_ylabel("$\Delta\prime^{17}$O$_{measured}$ - $\Delta\prime^{17}$O$_{expected}$ (ppm)")
 ax2.set_xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
-
-plt.xlim(-7.5, 0.5)
-plt.ylim(-70, 25)
+ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
+         transform=ax2.transAxes)
 
 # plt.tight_layout()
 plt.savefig(os.path.join(sys.path[0], "SK Figure 1"))
