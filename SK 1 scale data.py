@@ -207,10 +207,10 @@ fig, (ax1, ax2) = plt.subplots(1, 2)
 # Assign colors and markers to samples
 df.sort_values(by="SampleName", inplace=True)
 categories = df["SampleName"].unique()
-markers = dict(zip(categories, ["o", "s", "D", "^", "v", "X", "P", "*", "o",
-               "s", "D", "^", "v", "X", "P", "*", "o", "s", "D", "^", "v", "X", "P", "*"]))
-colors = dict(zip(categories, plt.cm.tab20(
-    np.linspace(0, 1, len(categories)))))
+markers = dict(zip(categories,
+                   ["o", "s", "D", "^", "v", "X", "P", "*"]*4))
+colors = dict(zip(categories,
+                  plt.cm.tab20(np.linspace(0, 1, len(categories)))))
 
 
 # Subplot A
