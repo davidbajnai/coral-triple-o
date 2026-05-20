@@ -1,38 +1,30 @@
 # This code is partly based on isoForam by Daëron & Gray (2023)
-# The code reads in the coral collection sites (location and depth) from "SK sample info.csv"
+# The code reads in the coral collection sites (location and depth) from "SK_Table_S-1_part-1.csv"
 # and then assigns a seawater T and d18O value to each site based on the gridded model of Breitkreuz et al. (2018)
 
-# INPUT: SK Table S-1.csv, SK Table S-3 part-1.csv, D18O_Breitkreuz_et_al_2018.nc
-# OUTPUT: SK Figure S1.png, SK Table S-3 part-2.csv
+# INPUT: SK_Table_S-1_part-1.csv, SK_Table_S-3_part-1.csv, SK_D18O_Breitkreuz_et_al_2018.nc
+# OUTPUT: SK_Figure_S1.png, SK_Table_S-3_part-2.csv
 
 # >>>>>>>>>
 
 # Import libraries
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from SK_functions import *
 from scipy.interpolate import interp1d
 from csv import DictReader
-import pandas as pd
 import netCDF4 as nc
 from pylab import *
-import sys
-import os
 
-# Import functions
-from functions import *
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
 
-
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
-plt.rcParams["figure.figsize"] = (9, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
-
+# Apply plot parameters
+apply_mpl_style()
 
 # Function to format the text for the SI table
 def format_text(row, value, error):
@@ -46,7 +38,11 @@ Tsw_model_sigma = 1.0
 
 # This file is not included in the repository due to its size
 # It can be downloaded from https://doi.pangaea.de/10.1594/PANGAEA.889922
-ds = nc.Dataset(os.path.join(sys.path[0], "D18O_Breitkreuz_et_al_2018.nc"))
+try:
+	ds = nc.Dataset(os.path.join(data_dir, "SK_D18O_Breitkreuz_et_al_2018.nc"))
+except FileNotFoundError:
+	print("The file 'SK_D18O_Breitkreuz_et_al_2018.nc' is not found in the data directory. Please download it from https://doi.pangaea.de/10.1594/PANGAEA.889922 and place it in the data directory.")
+	exit()
 
 lats = ds['lat_1deg_center'][:,0]
 lons = ds['lon_1deg_center'][0,:]
@@ -71,7 +67,7 @@ gx = cos(glon * pi / 180) * cos(glat * pi / 180)
 gy = sin(glon * pi / 180) * cos(glat * pi / 180)
 gz = sin(glat * pi / 180)
 
-with open(os.path.join(sys.path[0], "SK Table S-1 part-1.csv")) as f:
+with open(os.path.join(data_dir, "SK_Table_S-1_part-1.csv")) as f:
 	Samples = [{k: r[k] for k in r} for r in DictReader(f)]
 	print(Samples[0].keys())
 for r in Samples:
@@ -164,17 +160,17 @@ for s in Samples:
 
 	# Save figures
 	# plt.tight_layout()
-	# savefig(os.path.join(sys.path[0], f'{Sample} model')
+	# savefig(os.path.join(plots_dir, f"{Sample}_model"))
 	# plt.close()
 
 print(f'\nMean errors of the interpolation are {df_err["err_T"].mean():.0f} °C, {df_err["err_d18Osw"].mean():.2f}‰')
 
 
 # Import the data
-df_measurements = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3 part-1.csv"))
+df_measurements = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3_part-1.csv"))
 
 # Merge the dataframes
-df_Info = pd.read_csv(os.path.join(sys.path[0], "SK Table S-1 part-1.csv"))
+df_Info = pd.read_csv(os.path.join(data_dir, "SK_Table_S-1_part-1.csv"))
 df = df_measurements.merge(
 	df_Info, on='SampleName').merge(df_model, on='SampleName')
 
@@ -183,14 +179,14 @@ df1 = df[["SampleName", "Type", "Species", "Lat", "Long", "Depth",
           "T_measured", "d18Osw_measured"]].copy()
 df1.loc[:, "T_database"] = df.apply(lambda row: format_text(row, 'T_database', 'T_database_err'), axis=1)
 df1.loc[:, "d18Osw_database"] = df.apply(lambda row: format_text(row, 'd18Osw_database', 'd18Osw_database'), axis=1)
-df1.to_excel(os.path.join(sys.path[0], "SK Table S-1.xlsx"), index=False)
+df1.to_excel(os.path.join(data_dir, "SK_Table_S-1.xlsx"), index=False)
 
 # Set Dp17Osw and Dp17Osw_err
 df["Dp17Osw"], df["Dp17Osw_err"] = -11, 6
 
 # Save data to CSV
 # drop columns that are not needed
-df.to_csv(os.path.join(sys.path[0], "SK Table S-3 part-2.csv"), index=False)
+df.to_csv(os.path.join(data_dir, "SK_Table_S-3_part-2.csv"), index=False)
 
 # Mean temperature of the warm-water corals
 print("\nMean temperature of the warm-water corals: " +
@@ -281,10 +277,10 @@ ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
          transform=ax2.transAxes)
 
 
-plt.savefig(os.path.join(sys.path[0], "SK Figure S1"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_S1"))
 plt.close("all")
 
 # print the largers  between measured and modelled d18Osw
 print("\nThe difference beween measured and database estimates: ")
 print(f"Temperature: {np.mean(abs(DT)):.0f} °C, max {np.max(abs(DT)):.0f} °C")
-print(f"d18Osw: {np.mean(abs(Dd18Osw)):.1f}‰, max {np.max(abs(Dd18Osw)):.1f}‰")
+print(f"d18Osw: {np.mean(abs(Dd18Osw)):.1f} ‰, max {np.max(abs(Dd18Osw)):.1f} ‰")

@@ -1,33 +1,24 @@
 # This code is used to calcualte and plot the CO2 hydration and hydroxylation slopes
 
 # INPUT: NONE
-# OUTPUT: SK Figure S7.png
+# OUTPUT: SK_Figure_S7.png
 
 # >>>>>>>>>
 
 # Import libraries
 import os
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from SK_functions import *
 
-# Import functions
-from functions import *
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
 
-
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
-plt.rcParams["figure.figsize"] = (4, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
+# Apply plot parameters
+apply_mpl_style()
 
 # Functions that make life easier
 
@@ -182,8 +173,8 @@ ax.text(prime(d18O_OH_eff) + 3, Dp17O_OH_eff,
         ha="left", va="center", color="k")
 
 # Hydroxylation endmember carbonate
-mixdfKIE = mix_d17O(d18O_A=d18O_OH_eff, D17O_A=Dp17O_OH_eff,
-                    d18O_B=d18O_CO2_KIE, D17O_B=Dp17O_CO2_KIE)
+mixdfKIE = mix_d17O(d18O_A=d18O_OH_eff, Dp17O_A=Dp17O_OH_eff,
+                    d18O_B=d18O_CO2_KIE, Dp17O_B=Dp17O_CO2_KIE)
 ax.plot(prime(mixdfKIE["mix_d18O"]), mixdfKIE["mix_Dp17O"],
         color="k", ls=":", zorder=-1)
 d18O_hydrox = mixdfKIE["mix_d18O"].iloc[67]
@@ -201,8 +192,8 @@ ax.text(prime(d18O_hydrox), Dp17O_hydrox - 10,
 
 
 # Hydration
-mixdf_hydra = mix_d17O(d18O_A=d18O_water, D17O_A=Dp17O_water,
-                       d18O_B=d18O_CO2_KIE, D17O_B=Dp17O_CO2_KIE)
+mixdf_hydra = mix_d17O(d18O_A=d18O_water, Dp17O_A=Dp17O_water,
+                       d18O_B=d18O_CO2_KIE, Dp17O_B=Dp17O_CO2_KIE)
 ax.plot(prime(mixdf_hydra["mix_d18O"]), mixdf_hydra["mix_Dp17O"],
         color="k", ls=":", zorder=-1)
 d18O_hydra = mixdf_hydra["mix_d18O"].iloc[67]
@@ -235,5 +226,5 @@ ax.set_ylim(-205, 205)
 ax.set_xlim(-41, 71)
 
 plt.tight_layout()
-plt.savefig(os.path.join(sys.path[0], "SK Figure S7"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_S7"))
 plt.close()

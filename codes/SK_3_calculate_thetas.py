@@ -1,35 +1,26 @@
 # This code is used to plot the coral data in triple oxygen isotope space,
 # and calculate the vital effect theta
 
-# INPUT: SK Table S-3 part-2.csv, isoDIC_***.csv
-# OUTPUT: SK Figure 1.png, SK Figure S5.png, (SK Figure S6.png), SK Table S-3 part-3.csv
+# INPUT: SK_Table_S-3_part-2.csv, SK_isoDIC_***.csv
+# OUTPUT: SK_Figure_1.png, SK_Figure_S5.png, (SK_Figure_S6.png), SK_Table_S-3_part-3.csv
 
 # >>>>>>>>>
 
 # Import libraries
-import sys
 import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from SK_functions import *
 
-# Import functions
-from functions import *
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
 
-
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
+# Apply plot parameters
+apply_mpl_style()
 plt.rcParams["figure.figsize"] = (9, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
-
 
 # Functions that make life easier
 def a18_cc(T):
@@ -168,15 +159,15 @@ def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fl
 
 
 # Import data from CSV files
-isoDIC_header = pd.read_csv(os.path.join(sys.path[0], "isoDIC_header.csv"), sep=",")
-isoDIC_cwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T9.csv"), sep=",")
+isoDIC_header = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_header.csv"), sep=",")
+isoDIC_cwc = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.8_T9.csv"), sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
 isoDIC_cwc = isoDIC_cwc - isoDIC_cwc.iloc[0]
-isoDIC_wwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T27.csv"), sep=",")
+isoDIC_wwc = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.5_T27.csv"), sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
 isoDIC_wwc = isoDIC_wwc - isoDIC_wwc.iloc[0]
 
-df = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3 part-2.csv"), sep=",")
+df = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3_part-2.csv"), sep=",")
 
 
 # Calculate equilibrium values using the "measured + database" d18Osw and T values
@@ -277,7 +268,7 @@ ax.fill_between(x_values, theta_wwc - theta_wwc_err, theta_wwc + theta_wwc_err, 
 ax.set_ylabel("$\\theta_{coral}$")
 ax.set_xticks([])
 
-plt.savefig(os.path.join(sys.path[0], "SK Figure S5"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_S5"))
 plt.close()
 
 
@@ -437,11 +428,11 @@ ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
          transform=ax2.transAxes)
 
 # plt.tight_layout()
-plt.savefig(os.path.join(sys.path[0], "SK Figure 1"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_1"))
 plt.close()
 
 # Save data to CSV file
-df.to_csv(os.path.join(sys.path[0], "SK Table S-3 part-3.csv"), index=False)
+df.to_csv(os.path.join(data_dir, "SK_Table_S-3_part-3.csv"), index=False)
 
 
 # Do some additional calculations for the discussion

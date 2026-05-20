@@ -1,36 +1,28 @@
 # The following code is used to:
 # Scale the TILDAS data based on the accepted values of the in-house reference gases
 
-# INPUT:    SK Table S-2.csv (replicate data)
+# INPUT:    SK_Table_S-2.csv (replicate data)
 
-# OUTPUT:   SK Figure S2a–c.png
-#           SK Figure S3.png
-#           SK Table S-3 part-1.csv (averaged data)
+# OUTPUT:   SK_Figure_S2a–c.png
+#           SK_Figure_S3.png
+#           SK_Table_S-3_part-1.csv (averaged data)
 
 # >>>>>>>>>
 
 # Import libraries
 import os
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from SK_functions import *
 
-# Import functions
-from functions import *
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
 
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
-plt.rcParams["figure.figsize"] = (9, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
+# Apply plot parameters
+apply_mpl_style()
 
 
 # Define functions
@@ -55,10 +47,6 @@ def applyAFF(d18O_CO2, d17O_CO2, mineral):
 
     elif mineral == "aragonite":
         alpha = 1.01063
-    
-    elif mineral == "dolomite":
-        # alpha = np.exp(11.03/1000) # Sharma and Clayton (1965)
-        alpha = np.mean([1.01178, 1.01186]) # Rosenbaum and Sheppard (1986)
 
     d18O_AC = (d18O_CO2 + 1000) / alpha - 1000
     d17O_AC = (d17O_CO2 + 1000) / (alpha ** 0.523) - 1000
@@ -156,7 +144,7 @@ def scaleData(df, project):
         ax.text(0.02, 0.98, "(" + SuppFig[FigNum] + ")", size=10, ha="left", va="top",
                 transform=ax.transAxes)
 
-        plt.savefig(os.path.join(sys.path[0], f"{project} Figure S2{SuppFig[FigNum]}"))
+        plt.savefig(os.path.join(plots_dir, f"{project}_Figure_S2{SuppFig[FigNum]}"))
         plt.close()
 
         # Exclude the standards from the exported dataframe
@@ -189,7 +177,7 @@ def average_data(df):
 # Here we go!
 
 # Scale the data
-df = scaleData(pd.read_csv(os.path.join(sys.path[0], "SK Table S-2.csv")), "SK")
+df = scaleData(pd.read_csv(os.path.join(data_dir, "SK_Table_S-2.csv")), "SK")
 
 # Average the data
 df_avg = average_data(df)
@@ -252,7 +240,7 @@ ax2.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
 ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
          transform=ax2.transAxes)
 
-plt.savefig(os.path.join(sys.path[0], "SK Figure S3"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_S3"))
 plt.close()
 
 # Print some values for the manuscript
@@ -292,4 +280,4 @@ Passey_data_df = pd.DataFrame([Passey_data])
 df_avg = pd.concat([df_avg, Passey_data_df], ignore_index=True)
 
 # Export CSV
-df_avg.to_csv(os.path.join(sys.path[0], "SK Table S-3 part-1.csv"), index=False)
+df_avg.to_csv(os.path.join(data_dir, "SK_Table_S-3_part-1.csv"), index=False)

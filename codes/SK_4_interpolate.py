@@ -1,35 +1,26 @@
 # This code is used to:
 # Calculate "vital effect"-corrected temperatures
 
-# INPUT: SK Table S-3 part-3.csv
-# OUTPUT: SK Figure 3.png, SK Table S-3.csv, SK Table S-3.xlsx, SK Table S-3 short.xlsx
+# INPUT: SK_Table_S-3_part-3.csv
+# OUTPUT: SK_Figure_3.png, SK_Table_S-3.csv, SK_Table_S-3.xlsx, SK_Table_S-3_short.xlsx
 
 # >>>>>>>>>
 
 # Import libraries
 import os
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from SK_functions import *
 from scipy.spatial.distance import cdist
 
-# Import functions
-from functions import *
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
 
-
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
-plt.rcParams["figure.figsize"] = (9, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
+# Apply plot parameters
+apply_mpl_style()
 
 
 # Functions that make life easier
@@ -243,7 +234,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
 
 
 # Read data from CSV files
-df = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3 part-3.csv"), sep=",")
+df = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3_part-3.csv"), sep=",")
 
 
 # Assign colors and markers
@@ -313,7 +304,7 @@ ax.set_ylabel("$\Delta\prime^{17}$O (ppm)")
 ax.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 
 plt.tight_layout()
-plt.savefig(os.path.join(sys.path[0], "SK Figure S6"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_S6"))
 plt.close()
 
 
@@ -384,14 +375,14 @@ ax2.set_xlabel("Growth temperature (°C)")
 ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
          transform=ax2.transAxes)
 
-plt.savefig(os.path.join(sys.path[0], "SK Figure 3"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_3"))
 plt.close("all")
 
 # Save the data
-df.to_csv(os.path.join(sys.path[0], "SK Table S-3.csv"), index=False)
-df.to_excel(os.path.join(sys.path[0], "SK Table S-3.xlsx"), index=False)
+df.to_csv(os.path.join(data_dir, "SK_Table_S-3.csv"), index=False)
+df.to_excel(os.path.join(data_dir, "SK_Table_S-3.xlsx"), index=False)
 
 # Create an abbreviated version of Table S-3 for the SI
 df = df[["SampleName", "Type", "Species", "d18O_AC", "d18O_error",
          "Dp17O_AC", "Dp17O_error", "Replicates", "theta_coral"]]
-df.to_excel(os.path.join(sys.path[0], "SK Table S-3 short.xlsx"), index=False)
+df.to_excel(os.path.join(data_dir, "SK_Table_S-3_short.xlsx"), index=False)

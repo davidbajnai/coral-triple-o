@@ -1,36 +1,27 @@
 # This code is used to:
 # create the figures showing the concept of the paper
 
-# INPUT: SK Table S-3 part-2.csv, seawater.csv, background.jpeg
-# OUTPUT: SK Figure 2.png, SK Graphical Abstract.png
+# INPUT: SK_Table_S-3_part-2.csv, SK_seawater.csv, SK_background.jpeg
+# OUTPUT: SK_Figure_2.png, SK_Graphical_Abstract.png
 
 # >>>>>>>>>
 
 # Import libraries
 import os
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from SK_functions import *
 from scipy.ndimage import zoom
 from scipy.spatial.distance import cdist
 
-# Import functions
-from functions import *
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
 
-
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
-plt.rcParams["figure.figsize"] = (4, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
+# Apply plot parameters
+apply_mpl_style()
 
 
 # Define additional functions
@@ -238,8 +229,8 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
 
 
 # Read data from CSV files
-swdf = pd.read_csv(os.path.join(sys.path[0], "seawater.csv"), sep=",")
-dfAll = pd.read_csv(os.path.join(sys.path[0], "SK Table S-3.csv"), sep=",")
+swdf = pd.read_csv(os.path.join(data_dir, "SK_seawater.csv"), sep=",")
+dfAll = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3.csv"), sep=",")
 theta_coral = round(dfAll["theta_coral"].mean(), 3)
 print(f"theta_coral: {theta_coral:.3f}")
 df = dfAll[dfAll["SampleName"] == "SK-SA5"]
@@ -300,7 +291,7 @@ rT, rTerr = get_17O_temp(d18O_coral=df["d18O_AC"].mean(),
                                 d18O_seawater_err=df["d18Osw_database_err"].mean(),
                                 Dp17O_seawater=df["Dp17Osw"].mean(),
                                 Dp17O_seawater_err=df["Dp17Osw_err"].mean(),
-                                theta_coral=theta_coral.mean(),
+                                theta_coral=theta_coral,
                                 ax=ax)
 
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-rT).abs().argsort()[:1]]
@@ -337,7 +328,7 @@ plt.ylabel("$\Delta\prime^{17}$O (ppm)")
 plt.xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 
 plt.tight_layout()
-plt.savefig(os.path.join(sys.path[0], "SK Figure 2"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_2"))
 plt.close()
 
 
@@ -436,12 +427,12 @@ plt.ylabel("$\Delta\prime^{17}$O")
 plt.xlabel("$\delta\prime^{18}$O")
 
 # Insert background image
-im = plt.imread(os.path.join(sys.path[0], "background.jpeg"))
+im = plt.imread(os.path.join(data_dir, "SK_background.jpeg"))
 y_scale = fig.get_size_inches()[1]*600 / im.shape[0]
 x_scale = fig.get_size_inches()[0]*600 / im.shape[1]
 resized_im = zoom(im, (y_scale, x_scale, 1))
 fig.figimage(resized_im, zorder = -12)
 
 plt.tight_layout()
-plt.savefig(os.path.join(sys.path[0], "SK Graphical Abstract"))
+plt.savefig(os.path.join(plots_dir, "SK_Graphical_Abstract"))
 plt.close()

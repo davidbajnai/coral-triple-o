@@ -1,45 +1,39 @@
 # This code is used to plot the disequilibrium loops for triple oxygen and clumped isotopes
 
-# INPUT: isoDIC_***.csv
-# OUTPUT: SK Figure S4.png
+# INPUT: SK_isoDIC_***.csv
+# OUTPUT: SK_Figure_S4.png
 
 # >>>>>>>>>
 
 # Import libraries
 import os
-import sys
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+from SK_functions import *
 
-# Plot parameters
-plt.rcParams["legend.loc"] = "best"
-plt.rcParams.update({'font.size': 7})
-plt.rcParams['scatter.edgecolors'] = "k"
-plt.rcParams['scatter.marker'] = "o"
-plt.rcParams["lines.linewidth"] = 0.5
-plt.rcParams["patch.linewidth"] = 0.5
-plt.rcParams["figure.figsize"] = (9, 4)
-plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["savefig.bbox"] = "tight"
-plt.rcParams['savefig.transparent'] = False
-plt.rcParams['mathtext.default'] = 'regular'
+# Set up directories
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "..", "data")
+plots_dir = os.path.join(script_dir, "..", "plots")
+
+# Apply plot parameters
+apply_mpl_style()
 
 # isoDIC models
-isoDIC_header = pd.read_csv(os.path.join(sys.path[0], "isoDIC_header.csv"), sep=",")
-isoDIC_cwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T9.csv"), sep=",")
+isoDIC_header = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_header.csv"), sep=",")
+isoDIC_cwc = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.8_T9.csv"), sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
 isoDIC_cwc = isoDIC_cwc - isoDIC_cwc.iloc[0]
 
-isoDIC_wwc = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T27.csv"), sep=",")
+isoDIC_wwc = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.5_T27.csv"), sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
 isoDIC_wwc = isoDIC_wwc - isoDIC_wwc.iloc[0]
 
-isoDIC_cwc2 = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.5_T9.csv"), sep=",")
+isoDIC_cwc2 = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.5_T9.csv"), sep=",")
 isoDIC_cwc2.columns = isoDIC_header.columns
 isoDIC_cwc2 = isoDIC_cwc2 - isoDIC_cwc2.iloc[0]
 
-isoDIC_wwc2 = pd.read_csv(os.path.join(sys.path[0], "isoDIC_pH8.8_T27.csv"), sep=",")
+isoDIC_wwc2 = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.8_T27.csv"), sep=",")
 isoDIC_wwc2.columns = isoDIC_header.columns
 isoDIC_wwc2 = isoDIC_wwc2 - isoDIC_wwc2.iloc[0]
 
@@ -177,5 +171,5 @@ ax2.set_xlabel("$\Delta_{48}$ disequilibrium (‰)")
 ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
          transform=ax2.transAxes)
 
-plt.savefig(os.path.join(sys.path[0], "SK Figure S4"))
+plt.savefig(os.path.join(plots_dir, "SK_Figure_S4"))
 plt.close()
