@@ -1,30 +1,34 @@
-# This code is used to:
-# create the figures showing the concept of the paper
+# The following code is used to:
+# Illustrate the conceptual basis of the coral vital-effect correction
+#
+# INPUT:    Table_S-3.csv
+#           seawater.csv
+#           background.jpeg
+#
+# OUTPUT:   Figure_2.png
+#           Graphical_Abstract.png
 
-# INPUT: SK_Table_S-3_part-2.csv, SK_seawater.csv, SK_background.jpeg
-# OUTPUT: SK_Figure_2.png, SK_Graphical_Abstract.png
-
-# >>>>>>>>>
-
-# Import libraries
-import os
+# Import libraries -------------------------------------------------------------
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from SK_functions import *
+from _helper_functions import Dp17O, apply_theta, prime, unprime
+from _plot_style import apply_plot_style, save_figure, C
 from scipy.ndimage import zoom
 from scipy.spatial.distance import cdist
 
-# Set up directories
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
-plots_dir = os.path.join(script_dir, "..", "plots")
+# Set up directories -----------------------------------------------------------
+project_root = Path(__file__).resolve().parents[1]
+script_dir = project_root / "codes"
+data_dir = project_root / "data"
+plots_dir = project_root / "plots"
 
-# Apply plot parameters
-apply_mpl_style()
+# Apply plot parameters --------------------------------------------------------
+apply_plot_style()
 
 
-# Define additional functions
+# Define additional functions --------------------------------------------------
 def a18_cc(T):
 
     # Used for the discussion
@@ -196,7 +200,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     ax.annotate("", xy=(prime(df_line["d18O"].values[0]), df_line["Dp17O"].values[0]),
                 xytext=(prime(df_line["d18O"].values[-1]),
                         df_line["Dp17O"].values[-1]),
-                arrowprops=dict(arrowstyle="<|-", color="#FF7A00", lw=1.5))
+                arrowprops=dict(arrowstyle="<|-", color=C["orange"], lw=1.5))
 
     # Maximum temperature
     shift_d18O = 5
@@ -209,7 +213,7 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     distances = cdist(df_eq_f, df_line)
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
     T_max = df_eq.iloc[min_indices[0]]["temperature"]
-    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"], "#FF7A00", ls=":")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"], C["orange"], ls=":")
 
     # Minimum temperature
     shift_d18O = 6.5
@@ -222,26 +226,34 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     distances = cdist(df_eq_f, df_line)
     min_indices = np.unravel_index(np.argmin(distances), distances.shape)
     T_min = df_eq.iloc[min_indices[0]]["temperature"]
-    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"], "#FF7A00", ls=":")
+    ax.plot(prime(df_line["d18O"]), df_line["Dp17O"], C["orange"], ls=":")
 
     print(f"Reconstructed temperature: {temp:.1f} ±{(T_max-T_min)/2:.1f} °C")
     return temp, (T_max-T_min)/2
 
 
-# Read data from CSV files
-swdf = pd.read_csv(os.path.join(data_dir, "SK_seawater.csv"), sep=",")
-dfAll = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3.csv"), sep=",")
+# Read data from CSV files -----------------------------------------------------
+swdf = pd.read_csv(data_dir / "input" / "literature" / "seawater.csv", sep=",")
+dfAll = pd.read_csv(data_dir / "output" / "Table_S-3.csv", sep=",")
 theta_coral = round(dfAll["theta_coral"].mean(), 3)
 print(f"theta_coral: {theta_coral:.3f}")
 df = dfAll[dfAll["SampleName"] == "SK-SA5"]
 
-# CREATE FIGURE 2
-fig, ax = plt.subplots(1, 1)
+# Figure 2
+# Create figure ----------------------------------------------------------------
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
+# Setup axes -------------------------------------------------------------------
+plt.xlim(-2, 47)
+plt.ylim(-110, 10)
+plt.ylabel("$\\Delta\\prime^{17}$O (ppm)")
+plt.xlabel("$\\delta\\prime^{18}$O (‰, VSMOW)")
+
+# Plot data --------------------------------------------------------------------
 # Plot seawater
-plt.text(4, 0, "seawater", ha="left", va="center", c="#83CACA")
+plt.text(4, 0, "seawater", ha="left", va="center", c=C["seawater"])
 plt.scatter(prime(swdf["d18O"]), swdf["Dp17O"],
-            marker="o", fc="#83CACA", lw=0,
+            marker="o", fc=C["seawater"], lw=0,
             label="seawater", zorder=-1)
 
 # Plot equilibrium and annotate the temperature range
@@ -260,8 +272,8 @@ mean_d18O = df[df["Type"] == "warm-water coral"]["d18O_AC"].mean()
 mean_Dp17O = df[df["Type"] == "warm-water coral"]["Dp17O_AC"].mean()
 df_eq_d18O = df_eq.iloc[(df_eq["d18O"]-mean_d18O).abs().argsort()[:1]]
 ax.scatter(prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1],
-           marker=".", fc="#4F4B41", ec="k", zorder=10)
-ax.annotate("apparent $\it{T}$\nfrom $\delta^{18}O$\n(" + f"{df_eq_d18O.iloc[0, 2]:.0f} °C)",
+           marker=".", fc=C["wgray7"], ec="k", zorder=10)
+ax.annotate("apparent $\\it{T}$\nfrom $\\delta^{18}O$\n(" + f"{df_eq_d18O.iloc[0, 2]:.0f} °C)",
             (prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1]),
             (prime(df_eq_d18O.iloc[0, 0]+0.3), df_eq_d18O.iloc[0, 1]+20),
             ha = "left", va = "bottom",
@@ -270,13 +282,13 @@ ax.annotate("",
             (prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1]),
             (prime(mean_d18O), mean_Dp17O),
             zorder=-1,
-            arrowprops=dict(arrowstyle="-|>", color="#4F4B41", lw=1.5))
+            arrowprops=dict(arrowstyle="-|>", color=C["wgray7"], lw=1.5))
 
 mean_T = df[df["Type"] == "warm-water coral"]["T_database"].mean()
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-mean_T).abs().argsort()[:1]]
 ax.scatter(prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1],
            marker=".", fc="w", ec="k", zorder=10)
-ax.annotate("measured\ngrowth $\it{T}$" + "\n(" + str(round(df_eq_T.iloc[0, 2])) + " °C)",
+ax.annotate("measured\ngrowth $\\it{T}$" + "\n(" + str(round(df_eq_T.iloc[0, 2])) + " °C)",
             (prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1]),
             xytext=(prime(df_eq_T.iloc[0, 0]+0.3), df_eq_T.iloc[0, 1]+30),
             ha="left", va="top",
@@ -296,8 +308,8 @@ rT, rTerr = get_17O_temp(d18O_coral=df["d18O_AC"].mean(),
 
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-rT).abs().argsort()[:1]]
 ax.scatter(prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1],
-           marker=".", fc="#FF7A00", ec="k", zorder=10)
-ax.annotate("reconstructed\ngrowth $\it{T}$" + "\n(" + f"{rT:.0f} ± {rTerr:.0f} °C)",
+           marker=".", fc=C["orange"], ec="k", zorder=10)
+ax.annotate("reconstructed\ngrowth $\\it{T}$" + "\n(" + f"{rT:.0f} ± {rTerr:.0f} °C)",
             (prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1]),
             xytext=(prime(df_eq_T.iloc[0, 0]+4), df_eq_T.iloc[0, 1]+10),
             ha="left", va="top",
@@ -307,7 +319,7 @@ ax.annotate("reconstructed\ngrowth $\it{T}$" + "\n(" + f"{rT:.0f} ± {rTerr:.0f}
 cat1 = df["Species"].unique()
 markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
 cat2 = df["Type"].unique()
-colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
+colors = dict(zip(cat2, [C["blue"], C["red"]]))
 
 # Plot the coral
 x = prime(df["d18O_AC"])
@@ -315,24 +327,17 @@ y = df["Dp17O_AC"]
 xerr = df["d18O_error"]
 yerr = df["Dp17O_error"]
 ax.scatter(x, y,
-           marker="P", fc="#EC0016", ec="w", zorder=10)
+           marker="P", fc=C["red"], ec="w", zorder=10)
 ax.errorbar(x, y, xerr=xerr, yerr=yerr,
-            fmt="none", color="#EC0016", zorder=9)
+            fmt="none", color=C["red"], zorder=9)
 ax.text(np.mean(x)-1, np.mean(y), "coral",
-        ha="right", va="center", c="#EC0016")
-
-# Axis properties
-plt.xlim(-2, 47)
-plt.ylim(-110, 10)
-plt.ylabel("$\Delta\prime^{17}$O (ppm)")
-plt.xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
-
-plt.tight_layout()
-plt.savefig(os.path.join(plots_dir, "SK_Figure_2"))
-plt.close()
+        ha="right", va="center", c=C["red"])
 
 
-# Abstract figure
+save_figure(plt.gcf(), plots_dir, "Figure_2", tight_layout=True)
+
+
+# Abstract figure -------------------------------------------------------------
 
 df = dfAll[dfAll["SampleName"] == "SK-DS3"]
 
@@ -342,12 +347,12 @@ plt.rcParams["figure.figsize"] = (5, 3)
 plt.rcParams["lines.linewidth"] = 1  # error bar width
 plt.rcParams["patch.linewidth"] = 1  # marker edge width
 
+# Create figure ----------------------------------------------------------------
 fig = plt.figure()
-
 ax = fig.add_subplot(111)
-ax.set_facecolor('none')
 
-# change axis colors to white
+# Setup axes -------------------------------------------------------------------
+ax.set_facecolor('none')
 ax.spines['bottom'].set_color('w')
 ax.spines['top'].set_color('w')
 ax.spines['left'].set_color('w')
@@ -356,7 +361,14 @@ ax.xaxis.label.set_color('w')
 ax.yaxis.label.set_color('w')
 ax.tick_params(axis='x', colors='w')
 ax.tick_params(axis='y', colors='w')
+plt.xlim(-2, 42)
+plt.ylim(-130, 10)
+plt.xticks([])
+plt.yticks([])
+plt.ylabel("$\\Delta\\prime^{17}$O")
+plt.xlabel("$\\delta\\prime^{18}$O")
 
+# Plot data --------------------------------------------------------------------
 # Plot equilibrium and annotate the temperature range
 df_eq = plot_equilibrium(Dp17Ow=-11, d18Ow=1,
                          Tmin=10, Tmax=100,
@@ -397,7 +409,7 @@ plt.plot(prime(df_eq_d18O.iloc[0, 0]), df_eq_d18O.iloc[0, 1],
 
 mean_T = df[df["Type"] == "warm-water coral"]["T_database"].mean()
 df_eq_T = df_eq.iloc[(df_eq["temperature"]-mean_T).abs().argsort()[:1]]
-ax.annotate("growth $\it{T}$" + "\n(" + str(round(df_eq_T.iloc[0, 2])) + " °C)",
+ax.annotate("growth $\\it{T}$" + "\n(" + str(round(df_eq_T.iloc[0, 2])) + " °C)",
             (prime(df_eq_T.iloc[0, 0]), df_eq_T.iloc[0, 1]),
             xytext=(prime(df_eq_T.iloc[0, 0])-2, df_eq_T.iloc[0, 1]+45),
             ha="left", va="top", color = "w",
@@ -410,29 +422,20 @@ y = df["Dp17O_AC"]
 xerr = df["d18O_error"]
 yerr = df["Dp17O_error"]
 ax.scatter(x, y,
-           marker="D", fc="#EC0016", ec="w", s=50)
+           marker="D", fc=C["red"], ec="w", s=50)
 plt.errorbar(x, y,
              xerr=xerr, yerr=yerr,
-             fmt="none", color="#EC0016", zorder=2)
+             fmt="none", color=C["red"], zorder=2)
 
 # Label the coral
 ax.text(np.mean(x)+1, np.mean(y)-5, "coral", ha="left", va="top", color="w")
 
-# Axis properties
-plt.xlim(-2, 42)
-plt.ylim(-130, 10)
-plt.xticks([])
-plt.yticks([])
-plt.ylabel("$\Delta\prime^{17}$O")
-plt.xlabel("$\delta\prime^{18}$O")
 
 # Insert background image
-im = plt.imread(os.path.join(data_dir, "SK_background.jpeg"))
+im = plt.imread(plots_dir / "background.jpeg")
 y_scale = fig.get_size_inches()[1]*600 / im.shape[0]
 x_scale = fig.get_size_inches()[0]*600 / im.shape[1]
 resized_im = zoom(im, (y_scale, x_scale, 1))
 fig.figimage(resized_im, zorder = -12)
 
-plt.tight_layout()
-plt.savefig(os.path.join(plots_dir, "SK_Graphical_Abstract"))
-plt.close()
+save_figure(plt.gcf(), plots_dir, "Graphical_Abstract", tight_layout=True)

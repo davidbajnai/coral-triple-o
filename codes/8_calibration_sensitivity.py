@@ -1,25 +1,26 @@
-# This code creates a single-panel plot of coral disequilibrium data in
-# DeltaDelta'17O vs Deltad18O space (Figure 1b style, points only).
+# The following code is used to:
+# Compare the sensitivity of coral fractionation exponents to equilibrium calibrations
 #
-# INPUT: SK_Table_S-3_part-2.csv
-# OUTPUT: SK_extra.png
+# INPUT:    Table_S-3.csv
+#
+# OUTPUT:   Figure_S8.png
 
-# Import libraries
-import os
+# Import libraries -------------------------------------------------------------
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from SK_functions import *
-# all necessary
+from _helper_functions import Dp17O, prime, unprime
+from _plot_style import apply_plot_style, save_figure, C
 
-# Set up directories
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
-plots_dir = os.path.join(script_dir, "..", "plots")
+# Set up directories -----------------------------------------------------------
+project_root = Path(__file__).resolve().parents[1]
+script_dir = project_root / "codes"
+data_dir = project_root / "data"
+plots_dir = project_root / "plots"
 
-# Apply plot parameters
-apply_mpl_style()
-
+# Apply plot parameters --------------------------------------------------------
+apply_plot_style()
 
 
 def a18_calcite_Coplen(T):
@@ -91,7 +92,7 @@ def cc_equilibrium(T, T_err, d18Ow, d18Ow_err, Dp17Ow, Dp17Ow_err, a18_func, the
         }
     )
 
-df = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3_part-2.csv"), sep=",")
+df = pd.read_csv(data_dir / "output" / "Table_S-3.csv", sep=",")
 
 equation_sets = {
     "guozhou_aragonite_guozhou_aragonite": (a18_aragonite_GuoZhou, theta_aragonite_GuoZhou),
@@ -114,12 +115,20 @@ for label, (a18_func, theta_func) in equation_sets.items():
     df[f"d18O_offset_{label}"] = df["d18O_AC"] - df_equi["d18O_equilibrium"].values
     df[f"Dp17O_offset_{label}"] = df["Dp17O_AC"] - df_equi["Dp17O_equilibrium"].values
 
-fig, ax = plt.subplots(1, 1)
+# Create figure ----------------------------------------------------------------
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
+# Setup axes -------------------------------------------------------------------
+ax.set_xlim(-7.5, 0.5)
+ax.set_ylim(-35, 25)
+ax.set_ylabel("$\\Delta\\prime^{17}$O$_{measured}$ - $\\Delta\\prime^{17}$O$_{expected}$ (ppm)")
+ax.set_xlabel("$\\delta^{18}$O$_{measured}$ - $\\delta^{18}$O$_{expected}$ (‰, VSMOW)")
+
+# Plot data --------------------------------------------------------------------
 plot_colors = {
-    "coplen_guozhou_aragonite": "white",
-    "guozhou_aragonite_guozhou_aragonite": "black",
-    "daeron_hayles_calcite": "blue",
+    "coplen_guozhou_aragonite": C["white"],
+    "guozhou_aragonite_guozhou_aragonite": C["black"],
+    "daeron_hayles_calcite": C["standard_blue"],
 }
 plot_labels = {
     "coplen_guozhou_aragonite": r"$^{18}\alpha$: Coplen (2007) | $\theta$: Guo & Zhou (2019) - aragonite",
@@ -135,16 +144,12 @@ for label in equation_sets:
         y,
         marker="o",
         facecolors=plot_colors[label],
-        edgecolors="black",
+        edgecolors=C["black"],
         label=plot_labels[label],
     )
 
-# Axis properties copied from Figure 1b
-ax.set_xlim(-7.5, 0.5)
-ax.set_ylim(-35, 25)
-ax.set_ylabel("$\\Delta\\prime^{17}$O$_{measured}$ - $\\Delta\\prime^{17}$O$_{expected}$ (ppm)")
-ax.set_xlabel("$\\delta^{18}$O$_{measured}$ - $\\delta^{18}$O$_{expected}$ (‰, VSMOW)")
+
+# Add legend -------------------------------------------------------------------
 ax.legend(bbox_to_anchor=(-0.1, -0.15), loc='upper left')
 
-plt.savefig(os.path.join(plots_dir, "SK_extra"))
-plt.close()
+save_figure(plt.gcf(), plots_dir, "Figure_S8")

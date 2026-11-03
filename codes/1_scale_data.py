@@ -1,31 +1,33 @@
 # The following code is used to:
-# Scale the TILDAS data based on the accepted values of the in-house reference gases
+# Scale and average TILDAS data using the in-house reference gases
+#
+# INPUT:    Table_S-2.csv (replicate data)
+#
+# OUTPUT:   Figure_S2a.png
+#           Figure_S2b.png
+#           Figure_S2c.png
+#           Figure_S3.png
+#           Table_S-3_part-1.csv (averaged data)
 
-# INPUT:    SK_Table_S-2.csv (replicate data)
-
-# OUTPUT:   SK_Figure_S2a–c.png
-#           SK_Figure_S3.png
-#           SK_Table_S-3_part-1.csv (averaged data)
-
-# >>>>>>>>>
-
-# Import libraries
-import os
+# Import libraries -------------------------------------------------------------
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from SK_functions import *
+from _helper_functions import A_from_a, Dp17O, d17O, prime, unprime
+from _plot_style import apply_plot_style, save_figure, C
 
-# Set up directories
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
-plots_dir = os.path.join(script_dir, "..", "plots")
+# Set up directories -----------------------------------------------------------
+project_root = Path(__file__).resolve().parents[1]
+script_dir = project_root / "codes"
+data_dir = project_root / "data"
+plots_dir = project_root / "plots"
 
-# Apply plot parameters
-apply_mpl_style()
+# Apply plot parameters --------------------------------------------------------
+apply_plot_style()
 
 
-# Define functions
+# Define functions -------------------------------------------------------------
 
 # Function to print info for scaled samples
 def print_info(df, d18O_col, Dp17O_col, sample_name):
@@ -113,7 +115,6 @@ def scaleData(df, project):
                 only_standard[["d18O_AC", "d17O_AC", "Dp17O_AC"]] = only_standard.apply(lambda x: applyAFF(x["d18O_scaled"], x["d17O_scaled"], "calcite"), axis=1, result_type="expand")
                 print_info(only_standard, "d18O_AC", "Dp17O_AC", standard); print("\t<--- scaled + AFF")
 
-            
 
         # Assign colors and markers to samples
         categories = group["SampleName"].unique()
@@ -123,8 +124,16 @@ def scaleData(df, project):
 
         # Figure: unscaled Dp17O vs time
 
+        # Create figure --------------------------------------------------------
         _, ax = plt.subplots()
 
+        # Setup axes -----------------------------------------------------------
+        ax.set_ylabel("$\\Delta\\prime^{17}$O (ppm, unscaled CO$_2$)")
+        ax.set_xlabel("Measurement date")
+        
+        ax.set_title(f"Measurement period: {period}")
+
+        # Plot data ------------------------------------------------------------
         for cat in categories:
             data = group[group["SampleName"] == cat]
             ax.scatter(data["dateTimeMeasured"], data["Dp17O"],
@@ -132,20 +141,16 @@ def scaleData(df, project):
             if np.isnan(data["Dp17OError"]).any() == False:
                 plt.errorbar(group["dateTimeMeasured"], group["Dp17O"],
                              yerr=group["Dp17OError"],
-                             fmt="none", color="#cacaca", zorder=0)
-        
-        ax.legend(loc='upper right', bbox_to_anchor=(1.18, 1))
+                             fmt="none", color=C["errorbar"], zorder=0)
 
-        ax.set_title(f"Measurement period: {period}")
 
-        # Axis properties
-        ax.set_ylabel("$\Delta\prime^{17}$O (ppm, unscaled CO$_2$)")
-        ax.set_xlabel("Measurement date")
         ax.text(0.02, 0.98, "(" + SuppFig[FigNum] + ")", size=10, ha="left", va="top",
                 transform=ax.transAxes)
 
-        plt.savefig(os.path.join(plots_dir, f"{project}_Figure_S2{SuppFig[FigNum]}"))
-        plt.close()
+        # Add legend -----------------------------------------------------------
+        ax.legend(loc='upper right', bbox_to_anchor=(1.18, 1))
+
+        save_figure(plt.gcf(), plots_dir, f"{project + '_' if project else ''}Figure_S2{SuppFig[FigNum]}")
 
         # Exclude the standards from the exported dataframe
         group = group[~group["SampleName"].str.contains("heavy|light|NBS|DH11|IAEA")]
@@ -177,7 +182,7 @@ def average_data(df):
 # Here we go!
 
 # Scale the data
-df = scaleData(pd.read_csv(os.path.join(data_dir, "SK_Table_S-2.csv")), "SK")
+df = scaleData(pd.read_csv(data_dir / "input" / "measured" / "Table_S-2.csv"), "")
 
 # Average the data
 df_avg = average_data(df)
@@ -189,9 +194,17 @@ df_avg[["d18O_AC", "d17O_AC", "Dp17O_AC"]] = df_avg.apply(lambda x: applyAFF(x["
 # print("\nAll sample replicates averaged:")
 # print(df_avg.round({"Dp17O_CO2": 0, "Dp17O_error": 0, "Dp17O_AC": 0}).round(3))
 
-# Create Figure S2
+# Figure S3
+# Create figure ----------------------------------------------------------------
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
+# Setup axes -------------------------------------------------------------------
+ax1.set_ylabel("$\\Delta\\prime^{17}$O (ppm, CO$_2$)")
+ax1.set_xlabel("$\\delta\\prime^{18}$O (‰, VSMOW, CO$_2$)")
+ax2.set_ylabel("$\\Delta\\prime^{17}$O (ppm, CO$_2$)")
+ax2.set_xlabel("$\\delta\\prime^{18}$O (‰, VSMOW, CO$_2$)")
+
+# Plot data --------------------------------------------------------------------
 # Assign colors and markers to samples
 df.sort_values(by="SampleName", inplace=True)
 categories = df["SampleName"].unique()
@@ -209,13 +222,10 @@ for cat in categories:
                 marker=markers[cat], fc=colors[cat], label=cat)
     ax1.errorbar(prime(df["d18O_scaled"]), df["Dp17O_scaled"],
                  yerr=df["Dp17OError"], xerr=df["d18OError"],
-                 fmt="none", color="#cacaca", zorder=0)
+                 fmt="none", color=C["errorbar"], zorder=0)
 
-# Axis properties
 ylim = ax1.get_ylim()
 xlim = ax1.get_xlim()
-ax1.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
-ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
 ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
          transform=ax1.transAxes)
 
@@ -228,20 +238,18 @@ for cat in categories:
                 marker=markers[cat], fc=colors[cat], label=cat)
     ax2.errorbar(prime(df_avg["d18O_CO2"]), df_avg["Dp17O_CO2"],
                  yerr=df_avg["Dp17O_error"], xerr=df_avg["d18O_error"],
-                 fmt="none", color="#cacaca", zorder=0)
+                 fmt="none", color=C["errorbar"], zorder=0)
 
-ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
 
-# Axis properties
 ax2.set_ylim(ylim)
 ax2.set_xlim(xlim)
-ax2.set_ylabel("$\Delta\prime^{17}$O (ppm, CO$_2$)")
-ax2.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW, CO$_2$)")
 ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
          transform=ax2.transAxes)
 
-plt.savefig(os.path.join(plots_dir, "SK_Figure_S3"))
-plt.close()
+# Add legend -------------------------------------------------------------------
+ax2.legend(loc='upper right', bbox_to_anchor=(1.35, 1))
+
+save_figure(plt.gcf(), plots_dir, "Figure_S3")
 
 # Print some values for the manuscript
 print(f"\nAverage error for Dp17O: {df_avg['Dp17O_error'].mean():.0f} ppm")
@@ -279,5 +287,5 @@ Passey_data = {"SampleName": "JBC03",
 Passey_data_df = pd.DataFrame([Passey_data])
 df_avg = pd.concat([df_avg, Passey_data_df], ignore_index=True)
 
-# Export CSV
-df_avg.to_csv(os.path.join(data_dir, "SK_Table_S-3_part-1.csv"), index=False)
+# Export CSV -------------------------------------------------------------------
+df_avg.to_csv(data_dir / "output" / "Table_S-3_part-1.csv", index=False)

@@ -1,29 +1,34 @@
-# This code is used to:
-# Calculate "vital effect"-corrected temperatures
+# The following code is used to:
+# Calculate vital-effect-corrected coral growth temperatures
+#
+# INPUT:    Table_S-3_part-3.csv
+#
+# OUTPUT:   Figure_3.png
+#           Figure_S6.png
+#           Table_S-3.csv
+#           Table_S-3.xlsx
+#           Table_S-3_short.xlsx
 
-# INPUT: SK_Table_S-3_part-3.csv
-# OUTPUT: SK_Figure_3.png, SK_Table_S-3.csv, SK_Table_S-3.xlsx, SK_Table_S-3_short.xlsx
-
-# >>>>>>>>>
-
-# Import libraries
-import os
+# Import libraries -------------------------------------------------------------
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from SK_functions import *
+from _helper_functions import Dp17O, apply_theta, prime, unprime
+from _plot_style import apply_plot_style, save_figure, C
 from scipy.spatial.distance import cdist
 
-# Set up directories
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
-plots_dir = os.path.join(script_dir, "..", "plots")
+# Set up directories -----------------------------------------------------------
+project_root = Path(__file__).resolve().parents[1]
+script_dir = project_root / "codes"
+data_dir = project_root / "data"
+plots_dir = project_root / "plots"
 
-# Apply plot parameters
-apply_mpl_style()
+# Apply plot parameters --------------------------------------------------------
+apply_plot_style()
 
 
-# Functions that make life easier
+# Functions that make life easier ----------------------------------------------
 def a18_cc(T):
 
     # Used for the discussion
@@ -183,8 +188,8 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
                     xerr=d18O_seawater_err, yerr=Dp17O_seawater_err,
                     fmt="none", color="k", zorder=-1)
     ax.annotate("carbonate equilibrium", xycoords="data", textcoords="data",
-            xy = (prime(df_eq["d18O"]).iloc[-1], df_eq["Dp17O"].iloc[-1]),
-            xytext = (prime(df_eq["d18O"]).iloc[-1], df_eq["Dp17O"].iloc[-1]+20),
+            xy = (prime(df_eq["d18O"])[-1], df_eq["Dp17O"].iloc[-1]),
+            xytext = (prime(df_eq["d18O"])[-1], df_eq["Dp17O"].iloc[-1]+20),
             ha="left", va="center",
             arrowprops=dict(arrowstyle="->", color="k"))
     ax.text(d18O_seawater-1, Dp17O_seawater-10, "ambient\nseawater", ha="left", va="top")
@@ -233,15 +238,15 @@ def get_17O_temp(d18O_coral, d18O_coral_error, Dp17O_coral, Dp17O_coral_error, d
     return temp, (T_max-T_min)/2
 
 
-# Read data from CSV files
-df = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3_part-3.csv"), sep=",")
+# Read data from CSV files -----------------------------------------------------
+df = pd.read_csv(data_dir / "output" / "Table_S-3_part-3.csv", sep=",")
 
 
 # Assign colors and markers
 cat1 = df["Species"].unique()
 markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
 cat2 = df["Type"].unique()
-colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
+colors = dict(zip(cat2, [C["blue"], C["red"]]))
 
 # Do the sensitivity analysis here (uncomment lines to test different scenarios)
 # -> What happens if we change the measurement error
@@ -258,8 +263,14 @@ print(f"\nUsing a mean seawater Dp17O error of {df['Dp17Osw_err'].mean():.0f} pp
 # Uncomment this line to produce Figure S6
 # df = df[df["SampleName"] == "SK-SA5"]
 
+# Create figure ----------------------------------------------------------------
 fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
+# Setup axes -------------------------------------------------------------------
+ax.set_ylabel("$\\Delta\\prime^{17}$O (ppm)")
+ax.set_xlabel("$\\delta\\prime^{18}$O (‰, VSMOW)")
+
+# Plot data --------------------------------------------------------------------
 # Get the "vital effect"-corrected temperatures
 theta_coral = round(df["theta_coral"].mean(), 3)
 df['T_17O_tuple'] = df.apply(lambda row: get_17O_temp(d18O_coral=row["d18O_AC"],
@@ -300,17 +311,23 @@ ax.errorbar(prime(df["d18O_AC"]), df["Dp17O_AC"],
             yerr=df["Dp17O_error"],
             fmt="none", color="k", zorder=-1)
 
-ax.set_ylabel("$\Delta\prime^{17}$O (ppm)")
-ax.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 
-plt.tight_layout()
-plt.savefig(os.path.join(plots_dir, "SK_Figure_S6"))
-plt.close()
+save_figure(plt.gcf(), plots_dir, "Figure_S6", tight_layout=True)
 
 
-# Create Figure 3
+# Figure 3
+# Create figure ----------------------------------------------------------------
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
+# Setup axes -------------------------------------------------------------------
+ax1.set_xlim(-1, 31)
+ax1.set_ylim(-6, 66)
+ax1.set_ylabel(r"Temperature from $\delta^{18}O$-thermometry (°C)")
+ax1.set_xlabel("Growth temperature (°C)")
+ax2.set_ylabel(r"Temperature corrected for vital effects ($\it{T}_{\Delta^{\prime 17}O}$, °C)")
+ax2.set_xlabel("Growth temperature (°C)")
+
+# Plot data --------------------------------------------------------------------
 # Subplot A
 
 for cat in cat1:
@@ -327,17 +344,12 @@ for cat in cat1:
                             fmt="none", color=colors[dog], zorder=0)
 
 # 1:1 line
-ax1.set_xlim(-1, 31)
-ax1.set_ylim(-6, 66)
 xmin, xmax = ax1.get_xlim()
 ymin, ymax = ax1.get_ylim()
 ax1.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
 angle = np.arctan((xmax-xmin)/(ymax-ymin)) * 180 / np.pi
 ax1.text(20, 18, "1:1", ha="center", va="center", rotation=angle)
 
-# Axis properties
-ax1.set_ylabel(r"Temperature from $\delta^{18}O$-thermometry (°C)")
-ax1.set_xlabel("Growth temperature (°C)")
 ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
          transform=ax1.transAxes)
 
@@ -361,28 +373,30 @@ for cat in cat1:
 ax2.plot([-10, 100], [-10, 100], c = "k", ls="dashed", zorder = -1)
 ax2.text(20, 18, "1:1", ha="center", va="center", rotation=angle)
 
-# Add legend and format species names to italic
+
+ax2.set_ylim(ymin, ymax)
+ax2.set_xlim(xmin, xmax)
+ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
+         transform=ax2.transAxes)
+
+# Add legend -------------------------------------------------------------------
 legend = ax2.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
 for text in legend.texts:
     text.set_fontsize(5.5)
     text.set_fontstyle('italic')
 
-# Axis properties
-ax2.set_ylim(ymin, ymax)
-ax2.set_xlim(xmin, xmax)
-ax2.set_ylabel(r"Temperature corrected for vital effects ($\it{T}_{\Delta^{\prime 17}O}$, °C)")
-ax2.set_xlabel("Growth temperature (°C)")
-ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
-         transform=ax2.transAxes)
+save_figure(plt.gcf(), plots_dir, "Figure_3")
 
-plt.savefig(os.path.join(plots_dir, "SK_Figure_3"))
-plt.close("all")
-
-# Save the data
-df.to_csv(os.path.join(data_dir, "SK_Table_S-3.csv"), index=False)
-df.to_excel(os.path.join(data_dir, "SK_Table_S-3.xlsx"), index=False)
+# Save the data ----------------------------------------------------------------
+df.to_csv(data_dir / "output" / "Table_S-3.csv", index=False)
+df.to_excel(data_dir / "output" / "Table_S-3.xlsx", index=False)
 
 # Create an abbreviated version of Table S-3 for the SI
 df = df[["SampleName", "Type", "Species", "d18O_AC", "d18O_error",
          "Dp17O_AC", "Dp17O_error", "Replicates", "theta_coral"]]
-df.to_excel(os.path.join(data_dir, "SK_Table_S-3_short.xlsx"), index=False)
+df.to_excel(data_dir / "output" / "Table_S-3_short.xlsx", index=False)
+
+# Remove intermediate tables ---------------------------------------------------
+# Only remove generated intermediates after every final table export succeeds.
+for part in (1, 2, 3):
+    (data_dir / "output" / f"Table_S-3_part-{part}.csv").unlink(missing_ok=True)

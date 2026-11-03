@@ -1,26 +1,27 @@
-# This code is used to calcualte and plot the CO2 hydration and hydroxylation slopes
+# The following code is used to:
+# Illustrate the isotope effects of CO2 absorption
+#
+# INPUT:    none
+#
+# OUTPUT:   Figure_S7.png
 
-# INPUT: NONE
-# OUTPUT: SK_Figure_S7.png
-
-# >>>>>>>>>
-
-# Import libraries
-import os
-import pandas as pd
+# Import libraries -------------------------------------------------------------
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
-from SK_functions import *
+from _helper_functions import A_from_a, B_from_a, Dp17O, apply_theta, calculate_theta, d17O, mix_d17O, prime
+from _plot_style import apply_plot_style, save_figure, C
 
-# Set up directories
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
-plots_dir = os.path.join(script_dir, "..", "plots")
+# Set up directories -----------------------------------------------------------
+project_root = Path(__file__).resolve().parents[1]
+script_dir = project_root / "codes"
+data_dir = project_root / "data"
+plots_dir = project_root / "plots"
 
-# Apply plot parameters
-apply_mpl_style()
+# Apply plot parameters --------------------------------------------------------
+apply_plot_style()
 
-# Functions that make life easier
+# Functions that make life easier ----------------------------------------------
 
 def a18_cc(T):
 
@@ -101,9 +102,17 @@ def a17CO2(T=273.15+22, eq="GZ19"):
     return a18CO2(T, eq)**theta
 
 
-# CREATE FIGURE S7
-fig, ax = plt.subplots()
+# Figure S7
+# Create figure ----------------------------------------------------------------
+fig, ax = plt.subplots(figsize=(4, 4))
 
+# Setup axes -------------------------------------------------------------------
+ax.set_xlabel("$\\delta\\prime^{18}$O (‰, VSMOW)")
+ax.set_ylabel("$\\Delta\\prime^{17}$O (ppm)")
+ax.set_ylim(-205, 205)
+ax.set_xlim(-41, 71)
+
+# Plot data --------------------------------------------------------------------
 # Temperature in °C
 T = 22
 
@@ -122,7 +131,7 @@ d18Occ = d18O_cc(T + 273.15, d18O_water)
 d17Occ = d17O_cc(T + 273.15, d17O(d18O_water, Dp17O_water))
 Dp17Occ = Dp17O(d17Occ, d18Occ)
 ax.scatter(prime(d18Occ), Dp17Occ,
-           marker="o", fc="#858379", ec="k")
+           marker="o", fc=C["wgray"], ec="k")
 
 # Diffusion
 Diff_shift = -3
@@ -180,15 +189,15 @@ ax.plot(prime(mixdfKIE["mix_d18O"]), mixdfKIE["mix_Dp17O"],
 d18O_hydrox = mixdfKIE["mix_d18O"].iloc[67]
 Dp17O_hydrox = mixdfKIE["mix_Dp17O"].iloc[67]
 ax.scatter(prime(d18O_hydrox), Dp17O_hydrox,
-           marker="o", fc="#EC0016", ec="k")
+           marker="o", fc=C["red"], ec="k")
 ax.annotate("", xycoords="data", textcoords="data",
             xy=(prime(d18Occ), Dp17Occ),
             xytext=(prime(d18O_hydrox), Dp17O_hydrox),
-            arrowprops=dict(arrowstyle="<|-", color="#EC0016", lw=1.5), zorder=-1)
+            arrowprops=dict(arrowstyle="<|-", color=C["red"], lw=1.5), zorder=-1)
 theta_hydrox = calculate_theta(d18Occ, Dp17Occ, d18O_hydrox, Dp17O_hydrox)
 ax.text(prime(d18O_hydrox), Dp17O_hydrox - 10,
         r"$\theta^{}_{hydroxylation}$ = " + f"{theta_hydrox:.3f}",
-        ha="center", va="top", color="#EC0016")
+        ha="center", va="top", color=C["red"])
 
 
 # Hydration
@@ -199,32 +208,25 @@ ax.plot(prime(mixdf_hydra["mix_d18O"]), mixdf_hydra["mix_Dp17O"],
 d18O_hydra = mixdf_hydra["mix_d18O"].iloc[67]
 Dp17O_hydra = mixdf_hydra["mix_Dp17O"].iloc[67]
 ax.scatter(prime(d18O_hydra), Dp17O_hydra,
-           marker="o", fc="#1455C0", ec="k")
+           marker="o", fc=C["blue"], ec="k")
 ax.annotate("", xycoords="data", textcoords="data",
             xy=(prime(d18Occ), Dp17Occ),
             xytext=(prime(d18O_hydra), Dp17O_hydra),
-            arrowprops=dict(arrowstyle="<|-", color="#1455C0", lw=1.5), zorder=-1)
+            arrowprops=dict(arrowstyle="<|-", color=C["blue"], lw=1.5), zorder=-1)
 theta_hydra = calculate_theta(d18Occ, Dp17Occ, d18O_hydra, Dp17O_hydra)
 ax.text(prime(d18O_hydra) - 5, Dp17O_hydra,
         r"$\theta^{}_{hydration}$ = " + f"{theta_hydra:.3f}",
         bbox=dict(fc='white', ec="None", alpha=0.8, pad=0.2),
-        ha="right", va="center", color="#1455C0")
+        ha="right", va="center", color=C["blue"])
 
 # Arrow to show diffusion KIE
 ax.annotate("", xycoords="data", textcoords="data",
             xy=(prime(d18Occ), Dp17Occ),
             xytext=(prime(d18O_diff), Dp17O_diff),
-            arrowprops=dict(arrowstyle="<|-", color="#FF9B00", lw=1.5), zorder=-1)
+            arrowprops=dict(arrowstyle="<|-", color=C["yellow7"], lw=1.5), zorder=-1)
 plt.text(prime(d18O_diff), Dp17O_diff,
          "diffusion",
-         ha="center", va="center", color="#FF9B00")
+         ha="center", va="center", color=C["yellow7"])
 
-ax.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
-ax.set_ylabel("$\Delta\prime^{17}$O (ppm)")
 
-ax.set_ylim(-205, 205)
-ax.set_xlim(-41, 71)
-
-plt.tight_layout()
-plt.savefig(os.path.join(plots_dir, "SK_Figure_S7"))
-plt.close()
+save_figure(plt.gcf(), plots_dir, "Figure_S7", tight_layout=True)

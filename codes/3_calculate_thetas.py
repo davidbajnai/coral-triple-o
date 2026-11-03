@@ -1,28 +1,33 @@
-# This code is used to plot the coral data in triple oxygen isotope space,
-# and calculate the vital effect theta
+# The following code is used to:
+# Calculate coral vital-effect fractionation exponents
+#
+# INPUT:    Table_S-3_part-2.csv
+#           isoDIC_header.csv
+#           isoDIC_pH8.8_T9.csv
+#           isoDIC_pH8.5_T27.csv
+#
+# OUTPUT:   Figure_1.png
+#           Figure_S5.png
+#           Table_S-3_part-3.csv
 
-# INPUT: SK_Table_S-3_part-2.csv, SK_isoDIC_***.csv
-# OUTPUT: SK_Figure_1.png, SK_Figure_S5.png, (SK_Figure_S6.png), SK_Table_S-3_part-3.csv
-
-# >>>>>>>>>
-
-# Import libraries
-import os
+# Import libraries -------------------------------------------------------------
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from SK_functions import *
+from _helper_functions import Dp17O, apply_theta, calculate_theta, prime, unprime
+from _plot_style import apply_plot_style, save_figure, C
 
-# Set up directories
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
-plots_dir = os.path.join(script_dir, "..", "plots")
+# Set up directories -----------------------------------------------------------
+project_root = Path(__file__).resolve().parents[1]
+script_dir = project_root / "codes"
+data_dir = project_root / "data"
+plots_dir = project_root / "plots"
 
-# Apply plot parameters
-apply_mpl_style()
-plt.rcParams["figure.figsize"] = (9, 4)
+# Apply plot parameters --------------------------------------------------------
+apply_plot_style()
 
-# Functions that make life easier
+# Functions that make life easier ----------------------------------------------
 def a18_cc(T):
 
     # Used for the discussion
@@ -158,16 +163,16 @@ def plot_equilibrium(Dp17Ow, d18Ow, Tmin, Tmax, ax, fluid_name="precipitating fl
     return equilibrium_df
 
 
-# Import data from CSV files
-isoDIC_header = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_header.csv"), sep=",")
-isoDIC_cwc = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.8_T9.csv"), sep=",")
+# Import data from CSV files ---------------------------------------------------
+isoDIC_header = pd.read_csv(data_dir / "input" / "modeled" / "isoDIC_header.csv", sep=",")
+isoDIC_cwc = pd.read_csv(data_dir / "input" / "modeled" / "isoDIC_pH8.8_T9.csv", sep=",")
 isoDIC_cwc.columns = isoDIC_header.columns
 isoDIC_cwc = isoDIC_cwc - isoDIC_cwc.iloc[0]
-isoDIC_wwc = pd.read_csv(os.path.join(data_dir, "SK_isoDIC_pH8.5_T27.csv"), sep=",")
+isoDIC_wwc = pd.read_csv(data_dir / "input" / "modeled" / "isoDIC_pH8.5_T27.csv", sep=",")
 isoDIC_wwc.columns = isoDIC_header.columns
 isoDIC_wwc = isoDIC_wwc - isoDIC_wwc.iloc[0]
 
-df = pd.read_csv(os.path.join(data_dir, "SK_Table_S-3_part-2.csv"), sep=",")
+df = pd.read_csv(data_dir / "output" / "Table_S-3_part-2.csv", sep=",")
 
 
 # Calculate equilibrium values using the "measured + database" d18Osw and T values
@@ -232,13 +237,19 @@ df["theta_coral_unique"] = np.round(means, 4)
 cat1 = df["Species"].unique()
 markers = dict(zip(cat1, ["o", "s", "D", "v", "^", "<", ">", "p", "P", "*"]))
 cat2 = df["Type"].unique()
-colors = dict(zip(cat2, ["#1455C0", "#EC0016"]))
+colors = dict(zip(cat2, [C["blue"], C["red"]]))
 
 
-# CREATE FIGURE S5
+# Figure S5
 
-fig, ax = plt.subplots()
+# Create figure ----------------------------------------------------------------
+fig, ax = plt.subplots(figsize=(9, 4))
 
+# Setup axes -------------------------------------------------------------------
+ax.set_ylabel("$\\theta_{coral}$")
+ax.set_xticks([])
+
+# Plot data --------------------------------------------------------------------
 # Create a separate scatter plot for each species
 for cat in cat1:
     for dog in cat2:
@@ -264,20 +275,25 @@ ax.fill_between(x_values, theta_cwc - theta_cwc_err, theta_cwc + theta_cwc_err, 
 ax.axhline(theta_wwc, color="red", ls="-")
 ax.fill_between(x_values, theta_wwc - theta_wwc_err, theta_wwc + theta_wwc_err, color="red", alpha=0.2, lw = 0)
 
-# Axis properties
-ax.set_ylabel("$\\theta_{coral}$")
-ax.set_xticks([])
 
-plt.savefig(os.path.join(plots_dir, "SK_Figure_S5"))
-plt.close()
+save_figure(plt.gcf(), plots_dir, "Figure_S5")
 
 
-
-# CREATE FIGURE 2
+# Figure 1
 
 # Subplot A: Dp17O vs dp18O
-fig, (ax1, ax2) = plt.subplots(1, 2)
+# Create figure ----------------------------------------------------------------
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 4))
 
+# Setup axes -------------------------------------------------------------------
+ax1.set_ylabel("$\\Delta\\prime^{17}$O (ppm)")
+ax1.set_xlabel("$\\delta\\prime^{18}$O (‰, VSMOW)")
+ax2.set_xlim(-7.5, 0.5)
+ax2.set_ylim(-70, 25)
+ax2.set_ylabel("$\\Delta\\prime^{17}$O$_{measured}$ - $\\Delta\\prime^{17}$O$_{expected}$ (ppm)")
+ax2.set_xlabel("$\\delta^{18}$O$_{measured}$ - $\\delta^{18}$O$_{expected}$ (‰, VSMOW)")
+
+# Plot data --------------------------------------------------------------------
 # Create a separate scatter plot for each species
 for cat in cat1:
     for dog in cat2:
@@ -294,20 +310,17 @@ for cat in cat1:
     
 # Plot quilibrium points
 ax1.scatter(prime(df["d18O_equilibrium"]), df["Dp17O_equilibrium"],
-            marker="x", color="#747067", label="Equilibrium", zorder=10, lw=1.5)
+            marker="x", color=C["wgray6"], label="Equilibrium", zorder=10, lw=1.5)
 ax1.errorbar(prime(df["d18O_equilibrium"]), df["Dp17O_equilibrium"],
              xerr=df["d18O_equilibrium_err"], yerr=df["Dp17O_equilibrium_err"],
-             fmt="none", color="#747067", zorder=-1)
+             fmt="none", color=C["wgray6"], zorder=-1)
 
 # Connect SampleName points with equilibrium points
 for i in range(len(df)):
     ax1.plot([prime(df["d18O_AC"][i]), prime(df["d18O_equilibrium"][i])],
              [df["Dp17O_AC"][i], df["Dp17O_equilibrium"][i]],
-             c="#cacaca", ls="dashed", lw=0.8, zorder=-1)
+             c=C["errorbar"], ls="dashed", lw=0.8, zorder=-1)
 
-# Axis properties
-ax1.set_ylabel("$\Delta\prime^{17}$O (ppm)")
-ax1.set_xlabel("$\delta\prime^{18}$O (‰, VSMOW)")
 ax1.text(0.02, 0.98, "(a)", size=10, ha="left", va="top",
          transform=ax1.transAxes)
 
@@ -337,49 +350,49 @@ for i in range(len(df)):
     slope = (0 - y) / (0 - x)
     slopes.append(round(slope, 1))
     ax2.plot([x, 0], [y, 0],
-             color="#cacaca", ls="dashed", lw=0.8, zorder=-1)
+             color=C["errorbar"], ls="dashed", lw=0.8, zorder=-1)
 
 # Plot equilibrium point
 mean_xerr = np.mean(df["d18O_equilibrium_err"])
 mean_yerr = np.mean(df["Dp17O_equilibrium_err"])
 ax2.scatter(0, 0,
-            marker="x", color="#747067", lw=1.5, label="Equilibrium", zorder=10)
+            marker="x", color=C["wgray6"], lw=1.5, label="Equilibrium", zorder=10)
 ax2.errorbar(0, 0,
              xerr=mean_xerr, yerr=mean_yerr,
-             fmt="none", color="#747067", zorder=-1)
+             fmt="none", color=C["wgray6"], zorder=-1)
 
 # Add isoDIC models
 cwc_target = (isoDIC_cwc["time(s)"] - 15*60).abs().idxmin()
 wwc_target = (isoDIC_wwc["time(s)"] - 15*60).abs().idxmin()
 
 ax2.plot(isoDIC_wwc["d18_CO3"], isoDIC_wwc["D17_CO3"],
-         c="darkred", ls="solid", zorder=3, lw=1)
+         c=C["model_warm"], ls="solid", zorder=3, lw=1)
 ax2.plot(isoDIC_cwc["d18_CO3"], isoDIC_cwc["D17_CO3"],
-         c="darkblue", ls="solid", zorder=3, lw=1)
+         c=C["model_cold"], ls="solid", zorder=3, lw=1)
 ax2.annotate("",
              (isoDIC_wwc["d18_CO3"].iloc[wwc_target],
               isoDIC_wwc["D17_CO3"].iloc[wwc_target]),
              (isoDIC_wwc["d18_CO3"].iloc[wwc_target-1],
               isoDIC_wwc["D17_CO3"].iloc[wwc_target-1]),
              ha="center", va="center", zorder=-1,
-             arrowprops=dict(arrowstyle="-|>", color="darkred", lw=1))
+             arrowprops=dict(arrowstyle="-|>", color=C["model_warm"], lw=1))
 ax2.annotate("",
              (isoDIC_cwc["d18_CO3"].iloc[cwc_target],
               isoDIC_cwc["D17_CO3"].iloc[cwc_target]),
              (isoDIC_cwc["d18_CO3"].iloc[cwc_target-1],
               isoDIC_cwc["D17_CO3"].iloc[cwc_target-1]),
              ha="center", va="center", zorder=-1,
-             arrowprops=dict(arrowstyle="-|>", color="darkblue", lw=1))
+             arrowprops=dict(arrowstyle="-|>", color=C["model_cold"], lw=1))
 
 ax2.text(-1, -30,
          "CO$_2$ absorbtion\n(modelled)",
          ha="center", va="center", color="k")
 ax2.text(-1, -37,
          r"$\it{T}$ = 9 °C, pH = 8.8",
-         ha="center", va="center", color="darkblue")
+         ha="center", va="center", color=C["model_cold"])
 ax2.text(-1, -42,
          r"$\it{T}$ = 27 °C, pH = 8.5",
-         ha="center", va="center", color="darkred")
+         ha="center", va="center", color=C["model_warm"])
 
 # Add diffusion vector
 theta_diff = (np.log((12+16+16)/(12+17+16)))/(np.log((12+16+16)/(12+18+16)))
@@ -390,10 +403,10 @@ ax2.annotate("",
              (A[0], A[1]),
              xytext=(B[0], B[1]),
              ha="center", va="center", zorder=-1,
-             arrowprops=dict(arrowstyle="<|-", color="#63A615", lw=1))
+             arrowprops=dict(arrowstyle="<|-", color=C["lgreen"], lw=1))
 ax2.text(B[0], B[1]-5,
          "diffusion",
-         ha="right", va="center", color="#63A615")
+         ha="right", va="center", color=C["lgreen"])
 
 
 # Add revised CO2 absorption vector
@@ -405,34 +418,27 @@ ax2.annotate("",
              (A[0], A[1]),
              xytext=(B[0], B[1]),
              ha="center", va="center", zorder=3,
-             arrowprops=dict(arrowstyle="<|-", color="#FF7A00", lw=1))
+             arrowprops=dict(arrowstyle="<|-", color=C["orange"], lw=1))
 ax2.text(B[0]+0.55, B[1]+6,
          "CO$_2$ absorbtion\n(experimental)",
          bbox=dict(fc='white', ec="None", alpha=0.5, pad=0.1),
-         ha="center", va="bottom", color="#FF7A00")
+         ha="center", va="bottom", color=C["orange"])
 
 
-# Add legend and format species names to italic
+ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
+         transform=ax2.transAxes)
+
+# Add legend -------------------------------------------------------------------
 legend = ax2.legend(loc='upper right', bbox_to_anchor=(1.45, 1))
 for text in legend.texts:
     text.set_fontsize(5.5)
     if 'Equilibrium' not in text.get_text() and 'vent coral' not in text.get_text():
         text.set_fontstyle('italic')
 
-# Axis properties
-ax2.set_xlim(-7.5, 0.5)
-ax2.set_ylim(-70, 25)
-ax2.set_ylabel("$\Delta\prime^{17}$O$_{measured}$ - $\Delta\prime^{17}$O$_{expected}$ (ppm)")
-ax2.set_xlabel("$\delta^{18}$O$_{measured}$ - $\delta^{18}$O$_{expected}$ (‰, VSMOW)")
-ax2.text(0.02, 0.98, "(b)", size=10, ha="left", va="top",
-         transform=ax2.transAxes)
+save_figure(plt.gcf(), plots_dir, "Figure_1")
 
-# plt.tight_layout()
-plt.savefig(os.path.join(plots_dir, "SK_Figure_1"))
-plt.close()
-
-# Save data to CSV file
-df.to_csv(os.path.join(data_dir, "SK_Table_S-3_part-3.csv"), index=False)
+# Save data to CSV file --------------------------------------------------------
+df.to_csv(data_dir / "output" / "Table_S-3_part-3.csv", index=False)
 
 
 # Do some additional calculations for the discussion
