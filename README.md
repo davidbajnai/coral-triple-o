@@ -1,5 +1,5 @@
 # Supplementary material for:</br>Correcting for Vital Effects in Coral Carbonate Using Triple Oxygen Isotopes
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11277154.svg)](https://doi.org/10.5281/zenodo.11277154)
+[![DOI](https://zenodo.org/badge/734389177.svg)](https://doi.org/10.5281/zenodo.11277153)
 
 ## Graphical abstract
 
@@ -48,7 +48,7 @@ Elements of [2_get_sw_parameters.py](codes/2_get_sw_parameters.py) are based on 
 
 - [seawater.csv](data/input/literature/seawater.csv) contains published triple oxygen isotope measurements of seawater. Source: [Luz and Barkan (2010)](https://doi.org/10.1016/j.gca.2010.08.016), [Lin et al. (2021)](https://doi.org/10.1021/acsearthspacechem.1c00187).
 
-> [!IMPORTANT]
+> [!WARNING]
 >A newer publication revisiting the Lin et al. (2021) seawater data is available: [Lin et al. (2025)](https://doi.org/10.1021/acsearthspacechem.5c00135). The 2025 publication reports a revised seawater ∆'<sup>17</sup>O value of -5 ppm, which is 6 ppm higher than the value used in this study.
 
 The gridded seawater dataset is excluded from version control. Download the NetCDF data from [Breitkreuz et al. (2018)](https://doi.org/10.1594/PANGAEA.889922) and save the file as [D18O_Breitkreuz_et_al_2018.nc](data/input/literature/D18O_Breitkreuz_et_al_2018.nc) in [data/input/literature/](data/input/literature/).
