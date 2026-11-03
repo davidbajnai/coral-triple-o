@@ -13,7 +13,7 @@
 >[!NOTE]
 >If you use the data or scripts from this repository, please cite the associated Zenodo dataset:
 >
->Bajnai, D., Klipsch, S., & Herwartz, D. (2024). Supplementary material for Correcting for vital effects in coral carbonate using triple oxygen isotopes [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.13269294
+>Bajnai, D., Klipsch, S., & Herwartz, D. (2024). Supplementary material for "Correcting for vital effects in coral carbonate using triple oxygen isotopes" [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.13269294
 
 ## Codes
 
