@@ -10,6 +10,11 @@
 > [!IMPORTANT]
 > Bajnai, D., Klipsch, S., Davies, A. J., Raddatz, J., Gischler, E., Rüggeberg, A., Pack, A., & Herwartz, D. (2024). Correcting for vital effects in coral carbonate using triple oxygen isotopes. Geochemical Perspectives Letters, 31, 38-43. [10.7185/geochemlet.2430](https://doi.org/10.7185/geochemlet.2430)
 
+>[!NOTE]
+>If you use the data or scripts from this repository, please cite the associated Zenodo dataset:
+>
+>Bajnai, D., Klipsch, S., & Herwartz, D. (2024). Supplementary material for Correcting for vital effects in coral carbonate using triple oxygen isotopes [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.13269294
+
 ## Codes
 
 - [1_scale_data.py](codes/1_scale_data.py) scales and averages the TILDAS measurements. Input: [Table_S-2.csv](data/input/measured/Table_S-2.csv). Output: [Table_S-3_part-1.csv](data/output/Table_S-3_part-1.csv), [Figure_S2a.png](plots/Figure_S2a.png), [Figure_S2b.png](plots/Figure_S2b.png), [Figure_S2c.png](plots/Figure_S2c.png), [Figure_S3.png](plots/Figure_S3.png).
